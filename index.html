@@ -167,7 +167,7 @@
 
     <!-- 輔助 DOM -->
     <script>
-        // 修復：重新定義遺漏的全域變數
+        // 修復：確保全域變數定義正確
         const allZhuyin = "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦㄧㄨㄩ";
         const apiKey = ""; 
         
@@ -212,7 +212,7 @@
             'ㄩ': ['月亮 ㄩㄝˋ ㄌㄧㄤˋ', '玉米 ㄩˋ ㄇㄧˇ', '雨衣 ㄩˇ ㄧ', '語言 ㄩˇ ㄧㄢˊ', '浴室 ㄩˋ ㄕˋ', '魚缸 ㄩˊ ㄍㄤ', '宇宙 ㄩˇ ㄓㄡ', '愉快 ㄩˊ ㄎㄨㄞˋ']
         };
 
-        // 資料庫連動：檢查 EXTENDED_WORDS 是否從外部 .js 載入
+        // 資料庫連動邏輯
         window.addEventListener('load', () => {
             if (typeof EXTENDED_WORDS !== 'undefined') {
                 for (let zy in EXTENDED_WORDS) {
@@ -239,16 +239,13 @@
         function openZhuyinPicker(e, inputEl) {
             e.stopPropagation();
             let picker = document.getElementById('zhuyin-picker');
-            // 修復：確保 picker 存在並正確操作，防止 TypeError
             if (!picker) {
                 picker = document.createElement('div');
                 picker.id = 'zhuyin-picker';
                 document.body.appendChild(picker);
             }
-            
             const rect = inputEl.getBoundingClientRect();
             picker.innerHTML = '';
-            
             allZhuyin.split('').forEach(char => {
                 const key = document.createElement('div');
                 key.className = 'picker-key';
@@ -262,7 +259,6 @@
                 };
                 picker.appendChild(key);
             });
-
             picker.style.display = 'grid';
             let top = rect.bottom + window.scrollY + 10;
             let left = rect.left + window.scrollX;
@@ -349,7 +345,8 @@
 
             if (currentKey) {
                 try {
-                    let prompt = input ? `針對注音『${input}』生成 8 個常用的造詞。` : `隨機選一個注音符號生成 8 個常用的造詞。`;
+                    // 修復：更新 AI 指令，告知從 37 個注音中隨機挑選
+                    let prompt = input ? `針對注音『${input}』生成 8 個常用的造詞。` : `從ㄅ~ㄦ 37 個注音符號中隨機挑選並生成 8 個常用的造詞（每個造詞可以屬於不同的注音符號）。`;
                     prompt += ` 條件：詞彙長度必須剛好為 2 個字，不可包含 [${existing.join(', ')}]。JSON格式：{"words": [{"text": "...", "zhuyin": "..."}]}`;
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${currentKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } } ) });
                     const result = await res.json();
@@ -365,10 +362,9 @@
                 const pool = SMART_LIB[input] || ['無資料 ㄨˊ ㄗ ㄌㄧㄠˋ'];
                 resultWords = pool.filter(w => w.split(' ')[0].length === 2).sort(() => 0.5 - Math.random()).filter(w => !existing.includes(w.split(' ')[0])).slice(0, 8);
             } else {
-                const keys = Object.keys(SMART_LIB);
-                const randomZy = keys[Math.floor(Math.random() * keys.length)];
-                const pool = SMART_LIB[randomZy];
-                resultWords = pool.filter(w => w.split(' ')[0].length === 2).sort(() => 0.5 - Math.random()).filter(w => !existing.includes(w.split(' ')[0])).slice(0, 8);
+                // 修復：隨機生成模式現在會從「所有」注音符號中隨機抽樣 8 個字，而非固定一種
+                const allPool = Object.values(SMART_LIB).flat();
+                resultWords = allPool.filter(w => w.split(' ')[0].length === 2).sort(() => 0.5 - Math.random()).filter(w => !existing.includes(w.split(' ')[0])).slice(0, 8);
             }
             sectionState[sectionId] = { words: resultWords, status: input ? '指定' : '隨機', val: input };
             renderToSection(sectionId, resultWords); btnText.innerText = oldBtnText;
