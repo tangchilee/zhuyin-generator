@@ -110,7 +110,7 @@
             </div>
         </div>
 
-        <!-- 第一练习区 -->
+        <!-- 第一練習區 -->
         <div id="section-top" class="mb-8 sm:mb-12 section-block">
             <div class="text-blue-600 font-black mb-4 flex items-center gap-2 px-1 text-xl sm:text-3xl">
                 <span class="bg-blue-600 text-white px-2 py-0.5 rounded-lg text-sm sm:text-base font-bold">第一區</span> 上半部練習
@@ -128,7 +128,7 @@
 
         <hr class="section-divider border-dashed border-slate-300 mb-8 sm:mb-12">
 
-        <!-- 第二练习区 -->
+        <!-- 第二練習區 -->
         <div id="section-bottom" class="mb-8 sm:mb-12 section-block">
             <div class="text-indigo-600 font-black mb-4 flex items-center gap-2 px-1 text-xl sm:text-3xl">
                 <span class="bg-indigo-600 text-white px-2 py-0.5 rounded-lg text-sm sm:text-base font-bold">第二區</span> 下半部練習
@@ -161,9 +161,15 @@
         <div id="globalError" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-lg p-4 bg-red-600 text-white rounded-xl text-center shadow-2xl z-50 font-bold"></div>
     </div>
 
+    <!-- 注音點選器容器 -->
+    <div id="zhuyin-picker"></div>
+    <div id="capture-area"><div id="capture-content"></div></div>
+
     <!-- 輔助 DOM -->
     <script>
-        const apiKey = ""; // 初始化變數避免 ReferenceError
+        // 修復：重新定義遺漏的全域變數
+        const allZhuyin = "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦㄧㄨㄩ";
+        const apiKey = ""; 
         
         // 基本備援資料庫
         let SMART_LIB = {
@@ -233,13 +239,16 @@
         function openZhuyinPicker(e, inputEl) {
             e.stopPropagation();
             let picker = document.getElementById('zhuyin-picker');
+            // 修復：確保 picker 存在並正確操作，防止 TypeError
             if (!picker) {
                 picker = document.createElement('div');
                 picker.id = 'zhuyin-picker';
                 document.body.appendChild(picker);
             }
+            
             const rect = inputEl.getBoundingClientRect();
             picker.innerHTML = '';
+            
             allZhuyin.split('').forEach(char => {
                 const key = document.createElement('div');
                 key.className = 'picker-key';
@@ -253,6 +262,7 @@
                 };
                 picker.appendChild(key);
             });
+
             picker.style.display = 'grid';
             let top = rect.bottom + window.scrollY + 10;
             let left = rect.left + window.scrollX;
