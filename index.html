@@ -21,9 +21,9 @@
 
         @media (max-width: 640px) {
             :root {
-                --char-size: 1.65rem;
-                --unit-height: 65px;
-                --zhuyin-font: 0.85rem;
+                --char-size: 1.35rem; /* 修正：縮小國字以防溢出 */
+                --unit-height: 60px;  /* 修正：配合縮小的高度 */
+                --zhuyin-font: 0.7rem; /* 修正：縮小注音 */
             }
         }
 
@@ -36,13 +36,14 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 網頁預覽樣式：字體相容性序列 */
+        /* 網頁預覽樣式：首頁預覽恢復為最初的思源黑體 (Noto Sans TC) */
         .word-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .char-unit { display: flex; flex-direction: row-reverse; align-items: center; justify-content: center; height: var(--unit-height); margin-bottom: 2px; }
         .char-text { 
-            font-family: '標楷體', 'DFKai-SB', 'BiauKai', 'Apple LiSung', 'KaiTi', 'Noto Serif TC', serif; 
+            font-family: 'Noto Sans TC', sans-serif; /* 修正：恢復為最初的黑體預覽 */
             font-size: var(--char-size); 
             line-height: 1; 
+            font-weight: 700;
             display: flex; 
             align-items: center; 
             justify-content: center; 
@@ -164,7 +165,6 @@
                         </button>
                     </div>
                     <div class="result-area hidden mt-10 pt-8 border-t border-orange-100/50">
-                        <!-- 修正需求：手機版改為 4 欄 (grid-cols-4) -->
                         <div class="word-grid grid grid-cols-4 gap-2 sm:gap-4"></div>
                     </div>
                 </div>
@@ -188,25 +188,24 @@
                         </button>
                     </div>
                     <div class="result-area hidden mt-10 pt-8 border-t border-amber-100/50">
-                        <!-- 修正需求：手機版改為 4 欄 (grid-cols-4) -->
                         <div class="word-grid grid grid-cols-4 gap-2 sm:gap-4"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 功能輸出按鈕區：修正字體大小以防換行 -->
+        <!-- 功能輸出按鈕區：修正字體大小以防換行 (text-[13px] 確保手機不換行) -->
         <div class="grid grid-cols-2 gap-4 mb-12">
-            <button onclick="exportAsImage()" id="export-img-btn" class="bg-emerald-500 text-white py-5 rounded-2xl hover:bg-emerald-600 transition-all font-black shadow-xl shadow-emerald-100 flex items-center justify-center gap-2 text-sm sm:text-lg">
+            <button onclick="exportAsImage()" id="export-img-btn" class="bg-emerald-500 text-white py-5 rounded-2xl hover:bg-emerald-600 transition-all font-black shadow-xl shadow-emerald-100 flex items-center justify-center gap-2 text-[13px] sm:text-lg">
                 <i data-lucide="image" class="w-4 h-4 sm:w-5 sm:h-5"></i> 輸出圖片
             </button>
-            <button onclick="toggleSettings(event)" class="bg-zinc-800 text-white py-5 rounded-2xl hover:bg-zinc-900 transition-all font-black shadow-xl shadow-zinc-200 flex items-center justify-center gap-2 text-sm sm:text-lg">
+            <button onclick="toggleSettings(event)" class="bg-zinc-800 text-white py-5 rounded-2xl hover:bg-zinc-900 transition-all font-black shadow-xl shadow-zinc-200 flex items-center justify-center gap-2 text-[13px] sm:text-lg">
                 <i data-lucide="settings-2" class="w-4 h-4 sm:w-5 sm:h-5"></i> 進階 API 設定
             </button>
-            <button onclick="exportPracticeImage('section-top')" class="btn-sunset text-white py-5 rounded-2xl hover:opacity-90 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg">
+            <button onclick="exportPracticeImage('section-top')" class="btn-sunset text-white py-5 rounded-2xl hover:opacity-90 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-[13px] sm:text-lg">
                 <i data-lucide="printer" class="w-4 h-4 sm:w-5 sm:h-5"></i> 第一區練習單輸出
             </button>
-            <button onclick="exportPracticeImage('section-bottom')" class="btn-sunset text-white py-5 rounded-2xl hover:opacity-90 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg">
+            <button onclick="exportPracticeImage('section-bottom')" class="btn-sunset text-white py-5 rounded-2xl hover:opacity-90 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-[13px] sm:text-lg">
                 <i data-lucide="printer" class="w-4 h-4 sm:w-5 sm:h-5"></i> 第二區練習單輸出
             </button>
         </div>
@@ -223,12 +222,9 @@
     </div>
 
     <div id="zhuyin-picker"></div>
-    <!-- 擷取畫布隱藏區，嚴格保留輸出邏輯參數 -->
     <div id="capture-area"><div id="capture-content"></div></div>
 
     <script>
-        lucide.createIcons();
-
         const allZhuyin = "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦㄧㄨㄩ";
         const apiKey = ""; 
 
@@ -244,7 +240,7 @@
             'ㄍ': ['哥哥 ㄍㄜ ㄍㄜ˙', '公園 ㄍㄨㄥ ㄩㄢˊ', '故事 ㄍㄨˋ ㄕˋ', '西瓜 ㄒㄧ ㄍㄨㄚ', '國旗 ㄍㄨㄛˊ ㄑㄧˊ', '乖巧 ㄍㄨㄞ ㄑㄧㄠˇ', '工作 ㄍㄨㄥ ㄗㄨㄛˋ', '公共 ㄍㄨㄥ ㄍㄨㄥˋ', '鋼琴 ㄍㄤ ㄑㄧㄣˊ', '廣告 ㄍㄨㄤˇ ㄍㄠˋ'],
             'ㄎ': ['開水 ㄎㄞ ㄕㄨㄟˇ', '口袋 ㄎㄡˇ ㄉㄞˋ', '看書 ㄎㄢˋ ㄕㄨ', '烤肉 ㄎㄠˇ ㄖㄡˋ', '科學 ㄎㄜ ㄒㄩㄝˊ', '困難 ㄎㄨㄣˋ ㄋㄢˊ', '客廳 ㄎㄜˋ ㄊㄧㄥ', '空氣 ㄎㄨㄥ ㄑㄧˋ', '苦瓜 ㄎㄨˇ ㄍㄨㄚ', '快慢 ㄎㄨㄞˋ ㄇㄢˋ'],
             'ㄏ': ['喝水 ㄏㄜ ㄕㄨㄟˇ', '河流 ㄏㄜˊ ㄌㄧㄡˊ', '蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ', '好人 ㄏㄠˇ ㄖㄣˊ', '花朵 ㄏㄨㄚ ㄉㄨㄛˇ', '火車 ㄏㄨㄛˇ ㄔㄜ', '海洋 ㄏㄞˇ ㄧㄤˊ', '回家 ㄏㄨㄟˊ ㄐㄧㄚ', '後面 ㄏㄡˋ ㄇㄧㄢˋ', '紅包 ㄏㄨㄥˊ ㄅㄠ'],
-            'ㄐ': ['記者 ㄐㄧˋ ㄓㄜˇ', '簡單 ㄐㄧㄢˇ ㄉㄢ', '家人 ㄐㄧㄚ ㄖㄣˊ', '雞蛋 ㄐㄧ ㄉㄢˋ', '進步 ㄐㄧㄣˋ ㄅㄨˋ', '健康 ㄐㄧㄢˋ ㄎㄤ', '警察 ㄐㄧㄥˇ ㄔㄚˊ', '鏡子 ㄐㄧㄥˋ ㄗ˙', '加上 ㄐㄧㄚ ㄕㄤˋ', '景色 ㄐㄧㄥˇ ㄙㄜˋ'],
+            'ㄐ': ['記者 ㄐㄧˋ ㄓㄜˇ', '簡單 ㄐㄧㄢˇ ㄉㄢ', '家人 ㄐㄧㄚ ㄖㄣˊ', '雞蛋 ㄐㄧ ㄉㄢˋ', '進步 ㄐㄧㄣˋ ㄅㄨˋ', '健康 ㄐㄧㄢˋ ㄎㄤ', '警察 ㄐㄧㄥˇ ㄔㄚˊ', '鏡子 ㄐㄧˋ ㄗ˙', '加上 ㄐㄧㄚ ㄕㄤˋ', '景色 ㄐㄧㄥˇ ㄙㄜˋ'],
             'ㄑ': ['秋天 ㄑㄧㄡ ㄊㄧㄢ', '氣球 ㄑㄧˋ ㄑㄧㄡˊ', '前面 ㄑㄧㄢˊ ㄇㄧㄢˋ', '蜻廷 ㄑㄧㄥ ㄊㄧㄥˊ', '清潔 ㄑㄧㄥ ㄐㄧㄝˊ', '企鵝 ㄑㄧˋ ㄜˊ', '汽車 ㄑㄧˋ ㄔㄜ', '請問 ㄑㄧㄥˇ ㄨㄣˋ', '奇怪 ㄑㄧˊ ㄍㄨㄞˋ', '期待 ㄑㄧˊ ㄉㄞˋ'],
             'ㄒ': ['學校 ㄒㄩㄝˊ ㄒㄧㄠˋ', '小雞 ㄒㄧㄠˇ ㄐㄧ', '喜歡 ㄒㄧˇ ㄏㄨㄢ', '洗手 ㄒㄧˇ ㄕㄡˇ', '辛苦 ㄒㄧㄣ ㄎㄨˇ', '西瓜 ㄒㄧ ㄍㄨㄚ', '休息 ㄒㄧㄡ ㄒㄧˊ', '希望 ㄒㄧ ㄨㄤˋ'],
             'ㄓ': ['知道 ㄓ ㄉㄠˋ', '中午 ㄓㄨㄥ ㄨˇ', '種植 ㄓㄨㄥˋ ㄓˊ', '真誠 ㄓㄣ ㄔㄥˊ', '準備 ㄓㄨㄣˇ ㄅㄟˋ', '紙張 ㄓˇ ㄓㄤ', '整理 ㄓㄥˇ ㄌㄧˇ', '重要 ㄓㄨㄥˋ ㄧㄠˋ', '蜘蛛 ㄓ ㄓㄨ', '指甲 ㄓˇ ㄐㄧㄚˇ'],
@@ -352,8 +348,8 @@
                 const text = typeof item === 'string' ? item.split(' ')[0] : item.text;
                 const zyRaw = typeof item === 'string' ? item.split(' ').slice(1) : item.zhuyin.split(' ');
                 const card = document.createElement('div');
-                // 微調手機版 Padding 以容納 4 欄排版
-                card.className = "bg-white/80 rounded-2xl shadow-sm p-2 sm:p-4 flex items-center justify-center border border-orange-50";
+                // 修正需求：強化反差，使用純白背景與深橙邊框
+                card.className = "bg-white border-2 border-orange-200 rounded-2xl shadow-md p-1 sm:p-4 flex items-center justify-center";
                 let html = `<div class="word-container">`;
                 text.split('').forEach((char, i) => {
                     const zyStr = zyRaw[i] || ""; let symbols = '', tone = '', toneClass = '';
