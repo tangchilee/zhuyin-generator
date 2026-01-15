@@ -21,10 +21,12 @@
 
         @media (max-width: 640px) {
             :root {
-                --char-size: 1.35rem; /* 修正：縮小國字以防溢出 */
-                --unit-height: 60px;  /* 修正：配合縮小的高度 */
-                --zhuyin-font: 0.7rem; /* 修正：縮小注音 */
+                --char-size: 1.35rem; 
+                --unit-height: 60px;  
+                --zhuyin-font: 0.7rem; 
             }
+            /* 修正需求：手機版聲調往左移，靠近注音 */
+            .tone-side { right: -5px !important; }
         }
 
         body {
@@ -40,7 +42,7 @@
         .word-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .char-unit { display: flex; flex-direction: row-reverse; align-items: center; justify-content: center; height: var(--unit-height); margin-bottom: 2px; }
         .char-text { 
-            font-family: 'Noto Sans TC', sans-serif; /* 修正：恢復為最初的黑體預覽 */
+            font-family: 'Noto Sans TC', sans-serif; 
             font-size: var(--char-size); 
             line-height: 1; 
             font-weight: 700;
@@ -134,7 +136,7 @@
                     <div class="space-y-4 text-sm font-medium text-orange-900/70">
                         <p>1. <span class="text-orange-600">隨機生成</span>：直接點擊按鈕，由 AI 或詞庫隨機挑選 8 個詞彙。</p>
                         <p>2. <span class="text-orange-600">指定注音</span>：點擊輸入框選擇特定注音符號生成造詞。</p>
-                        <p>3. <span class="text-orange-600">練習單輸出</span>：可分區輸出注音練習單，採「直式造詞、橫式書寫練習」佈局。</p>
+                        <p>3. <span class="text-orange-600 text-orange-600">練習單輸出</span>：可分區輸出注音練習單，採「直式造詞、橫式書寫練習」佈局。</p>
                         <p>4. <span class="text-orange-600">Gemini API 設定</span>：導入自己的 API 金鑰可開啟 AI 即時生成功能，這能讓造詞跳脫固定詞庫，根據注音獲取更豐富、現代化且與時俱進的詞彙內容，提升教學的多樣性與廣度。</p>
                         <ul class="text-[12px] list-disc ml-8 space-y-1">
                             <li>前往 <a href="https://aistudio.google.com/" target="_blank" class="text-orange-600 underline">Google AI Studio</a> 登入並產生金鑰。</li>
@@ -149,12 +151,12 @@
         <div class="space-y-8 mb-12">
             <!-- 第一區 -->
             <div id="section-top" class="section-block">
-                <div class="glass-card p-8 border-t-4 border-orange-400">
+                <!-- 修正需求：手機版 Padding 縮小為 p-4 -->
+                <div class="glass-card p-4 sm:p-8 border-t-4 border-orange-400">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 bg-orange-500 text-white rounded-xl flex items-center justify-center font-black shadow-lg shadow-orange-200">1</div>
                         <h2 class="text-2xl font-black text-orange-900">第一區：上半部造詞</h2>
                     </div>
-                    <!-- 按鈕佈局並列 1:1 -->
                     <div class="flex flex-row gap-4 w-full">
                         <div class="relative w-1/2 group">
                             <input type="text" class="zhuyin-input warm-input w-full px-2 sm:px-6 py-4 rounded-2xl text-lg sm:text-xl text-center font-black cursor-pointer" placeholder="請選擇注音" readonly onclick="openZhuyinPicker(event, this)">
@@ -164,20 +166,21 @@
                             <i data-lucide="sparkles" class="w-4 h-4 sm:w-5 sm:h-5"></i> <span class="btn-text">產生造詞</span>
                         </button>
                     </div>
-                    <div class="result-area hidden mt-10 pt-8 border-t border-orange-100/50">
-                        <div class="word-grid grid grid-cols-4 gap-2 sm:gap-4"></div>
+                    <!-- 修正需求：縮小垂直間距 mt-4 pt-4 -->
+                    <div class="result-area hidden mt-4 pt-4 sm:mt-10 sm:pt-8 border-t border-orange-100/50">
+                        <div class="word-grid grid grid-cols-4 gap-1.5 sm:gap-4"></div>
                     </div>
                 </div>
             </div>
 
             <!-- 第二區 -->
             <div id="section-bottom" class="section-block">
-                <div class="glass-card p-8 border-t-4 border-amber-400">
+                <!-- 修正需求：手機版 Padding 縮小為 p-4 -->
+                <div class="glass-card p-4 sm:p-8 border-t-4 border-amber-400">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="w-10 h-10 bg-amber-500 text-white rounded-xl flex items-center justify-center font-black shadow-lg shadow-amber-200">2</div>
                         <h2 class="text-2xl font-black text-amber-900">第二區：下半部造詞</h2>
                     </div>
-                    <!-- 按鈕佈局並列 1:1 -->
                     <div class="flex flex-row gap-4 w-full">
                         <div class="relative w-1/2 group">
                             <input type="text" class="zhuyin-input warm-input w-full px-2 sm:px-6 py-4 rounded-2xl text-lg sm:text-xl text-center font-black cursor-pointer" placeholder="請選擇注音" readonly onclick="openZhuyinPicker(event, this)">
@@ -187,14 +190,15 @@
                             <i data-lucide="sparkles" class="w-4 h-4 sm:w-5 sm:h-5"></i> <span class="btn-text">產生造詞</span>
                         </button>
                     </div>
-                    <div class="result-area hidden mt-10 pt-8 border-t border-amber-100/50">
-                        <div class="word-grid grid grid-cols-4 gap-2 sm:gap-4"></div>
+                    <!-- 修正需求：縮小垂直間距 mt-4 pt-4 -->
+                    <div class="result-area hidden mt-4 pt-4 sm:mt-10 sm:pt-8 border-t border-amber-100/50">
+                        <div class="word-grid grid grid-cols-4 gap-1.5 sm:gap-4"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 功能輸出按鈕區：修正字體大小以防換行 (text-[13px] 確保手機不換行) -->
+        <!-- 功能輸出按鈕區 -->
         <div class="grid grid-cols-2 gap-4 mb-12">
             <button onclick="exportAsImage()" id="export-img-btn" class="bg-emerald-500 text-white py-5 rounded-2xl hover:bg-emerald-600 transition-all font-black shadow-xl shadow-emerald-100 flex items-center justify-center gap-2 text-[13px] sm:text-lg">
                 <i data-lucide="image" class="w-4 h-4 sm:w-5 sm:h-5"></i> 輸出圖片
