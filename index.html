@@ -164,7 +164,8 @@
                         </button>
                     </div>
                     <div class="result-area hidden mt-10 pt-8 border-t border-orange-100/50">
-                        <div class="word-grid grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+                        <!-- 修正需求：手機版改為 4 欄 (grid-cols-4) -->
+                        <div class="word-grid grid grid-cols-4 gap-2 sm:gap-4"></div>
                     </div>
                 </div>
             </div>
@@ -187,25 +188,26 @@
                         </button>
                     </div>
                     <div class="result-area hidden mt-10 pt-8 border-t border-amber-100/50">
-                        <div class="word-grid grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+                        <!-- 修正需求：手機版改為 4 欄 (grid-cols-4) -->
+                        <div class="word-grid grid grid-cols-4 gap-2 sm:gap-4"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 功能輸出按鈕區 -->
+        <!-- 功能輸出按鈕區：修正字體大小以防換行 -->
         <div class="grid grid-cols-2 gap-4 mb-12">
-            <button onclick="exportAsImage()" id="export-img-btn" class="bg-emerald-500 text-white py-5 rounded-2xl hover:bg-emerald-600 transition-all font-black shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 text-lg">
-                <i data-lucide="image"></i> 輸出圖片
+            <button onclick="exportAsImage()" id="export-img-btn" class="bg-emerald-500 text-white py-5 rounded-2xl hover:bg-emerald-600 transition-all font-black shadow-xl shadow-emerald-100 flex items-center justify-center gap-2 text-sm sm:text-lg">
+                <i data-lucide="image" class="w-4 h-4 sm:w-5 sm:h-5"></i> 輸出圖片
             </button>
-            <button onclick="toggleSettings(event)" class="bg-zinc-800 text-white py-5 rounded-2xl hover:bg-zinc-900 transition-all font-black shadow-xl shadow-zinc-200 flex items-center justify-center gap-3 text-lg">
-                <i data-lucide="settings-2"></i> 進階 API 設定
+            <button onclick="toggleSettings(event)" class="bg-zinc-800 text-white py-5 rounded-2xl hover:bg-zinc-900 transition-all font-black shadow-xl shadow-zinc-200 flex items-center justify-center gap-2 text-sm sm:text-lg">
+                <i data-lucide="settings-2" class="w-4 h-4 sm:w-5 sm:h-5"></i> 進階 API 設定
             </button>
-            <button onclick="exportPracticeImage('section-top')" class="btn-sunset text-white py-5 rounded-2xl hover:opacity-90 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-lg">
-                <i data-lucide="printer" class="w-5 h-5"></i> 第一區練習單輸出
+            <button onclick="exportPracticeImage('section-top')" class="btn-sunset text-white py-5 rounded-2xl hover:opacity-90 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg">
+                <i data-lucide="printer" class="w-4 h-4 sm:w-5 sm:h-5"></i> 第一區練習單輸出
             </button>
-            <button onclick="exportPracticeImage('section-bottom')" class="btn-sunset text-white py-5 rounded-2xl hover:opacity-90 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-lg">
-                <i data-lucide="printer" class="w-5 h-5"></i> 第二區練習單輸出
+            <button onclick="exportPracticeImage('section-bottom')" class="btn-sunset text-white py-5 rounded-2xl hover:opacity-90 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg">
+                <i data-lucide="printer" class="w-4 h-4 sm:w-5 sm:h-5"></i> 第二區練習單輸出
             </button>
         </div>
 
@@ -221,9 +223,12 @@
     </div>
 
     <div id="zhuyin-picker"></div>
+    <!-- 擷取畫布隱藏區，嚴格保留輸出邏輯參數 -->
     <div id="capture-area"><div id="capture-content"></div></div>
 
     <script>
+        lucide.createIcons();
+
         const allZhuyin = "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦㄧㄨㄩ";
         const apiKey = ""; 
 
@@ -347,7 +352,8 @@
                 const text = typeof item === 'string' ? item.split(' ')[0] : item.text;
                 const zyRaw = typeof item === 'string' ? item.split(' ').slice(1) : item.zhuyin.split(' ');
                 const card = document.createElement('div');
-                card.className = "bg-white/80 rounded-2xl shadow-sm p-4 flex items-center justify-center border border-orange-50";
+                // 微調手機版 Padding 以容納 4 欄排版
+                card.className = "bg-white/80 rounded-2xl shadow-sm p-2 sm:p-4 flex items-center justify-center border border-orange-50";
                 let html = `<div class="word-container">`;
                 text.split('').forEach((char, i) => {
                     const zyStr = zyRaw[i] || ""; let symbols = '', tone = '', toneClass = '';
