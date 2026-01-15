@@ -9,7 +9,8 @@
     <!-- 自動連結外部資料庫檔案 -->
     <script src="zhuyin_data.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@600;900&display=swap');
+        /* 載入 Noto Sans TC 作為基礎介面字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
         
         :root {
             --char-size: 3.5rem;
@@ -31,10 +32,10 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 網頁預覽樣式 */
+        /* 網頁預覽樣式：切換為標準標楷體 */
         .word-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .char-unit { display: flex; flex-direction: row-reverse; align-items: center; justify-content: center; height: var(--unit-height); margin-bottom: 2px; }
-        .char-text { font-family: 'Noto Serif TC', serif; font-size: var(--char-size); font-weight: 900; line-height: 1; display: flex; align-items: center; justify-content: center; width: calc(var(--char-size) * 1.1); height: var(--unit-height); color: #1e293b; }
+        .char-text { font-family: '標楷體', 'DFKai-SB', 'BiauKai', 'Apple LiSung', serif; font-size: var(--char-size); font-weight: normal; line-height: 1; display: flex; align-items: center; justify-content: center; width: calc(var(--char-size) * 1.1); height: var(--unit-height); color: #1e293b; }
         .zhuyin-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; height: var(--unit-height); width: calc(var(--zhuyin-font) * 2.4); margin-left: 1px; }
         .zhuyin-symbols { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: var(--zhuyin-font); line-height: 1.1; color: #2563eb; font-weight: bold; }
         
@@ -199,7 +200,7 @@
             'ㄞ': ['愛心 ㄞˋ ㄒㄧㄣ', '矮小 ㄞˇ ㄒㄧㄠˇ', '應該 ㄧㄥ ㄍㄞ', '徘徊 ㄆㄞˊ ㄏㄨㄞˊ', '拍賣 ㄆㄞ ㄇㄞˋ', '外國 ㄨㄞˋ ㄍㄨㄛˊ', '害蟲 ㄏㄞˋ ㄔㄨㄥˊ', '來到 ㄌㄞˊ ㄉㄠˋ', '彩色 ㄘㄞˇ ㄙㄜˋ', '拆除 ㄔㄞ ㄔㄨˊ'],
             'ㄟ': ['飛機 ㄈㄟ ㄐㄧ', '累積 ㄌㄟˇ ㄐㄧ', '杯子 ㄅㄟ ㄗ˙', '背後 ㄅㄟˋ ㄏㄡˋ', '歸類 ㄍㄨㄟ ㄌㄟˋ', '配音 ㄆㄟˋ ㄧㄣ', '沒有 ㄇㄟˊ ㄧㄡˇ', '對面 ㄉㄨㄟˋ ㄇㄧㄢˋ', '推開 ㄊㄨㄟ ㄎㄞ', '內容 ㄋㄟˋ ㄖㄨㄥˊ'],
             'ㄠ': ['驕傲 ㄐㄧㄠ ㄠˋ', '凹洞 ㄠ ㄉㄨㄥˋ', '宣告 ㄒㄩㄢ ㄍㄠˋ', '考試 ㄎㄠˇ ㄕˋ', '懊悔 ㄠˋ ㄏㄨㄟˇ', '包含 ㄅㄠ ㄏㄢˊ', '跑步 ㄆㄠˇ ㄅㄨˋ', '來到 ㄌㄞˊ ㄉㄠˋ', '掃地 ㄙㄠˇ ㄉㄧˋ', '包子 ㄅㄠ ㄗ˙'],
-            'ㄡ': ['歐美 ㄡ ㄇㄟˇ', '海鷗 ㄏㄞˇ ㄡ', '偶像 ㄡˇ ㄒㄧㄤˋ', '扣子 ㄎㄡˋ ㄗ˙', '後悔 ㄏㄡˋ ㄏㄨㄟˇ', '都有 ㄉㄡ ㄧㄡˇ', '透露 ㄊㄡˋ ㄌㄨˋ', '肉片 ㄖㄡˋ ㄆㄧㄢˋ', '救命 ㄐㄧㄡˋ ㄇㄧㄥˋ', '狗狗 ㄍㄨˇ ㄍㄡˇ'],
+            'ㄡ': ['歐美 ㄡ ㄇㄟˇ', '海鷗 ㄏㄞˇ ㄡ', '偶像 ㄡˇ ㄒㄧㄤˋ', '扣子 ㄎㄡˋ ㄗ˙', '後悔 ㄏㄡˋ ㄏㄨㄟˇ', '都有 ㄉㄡ ㄧㄡˇ', '透露 ㄊㄡˋ ㄌㄨˋ', '肉片 ㄖㄡˋ ㄆㄧㄢˋ', '救命 ㄐㄧㄡˋ ㄇㄧㄥˋ', '狗狗 ㄍㄡˇ ㄍㄡˇ'],
             'ㄢ': ['安靜 ㄢ ㄐㄧㄥˋ', '暗號 ㄢˋ ㄏㄠˋ', '岸邊 ㄢˋ ㄅㄧㄢ', '答案 ㄉㄚˊ ㄢˋ', '安排 ㄢ ㄆㄞˊ', '搬家 ㄅㄢ ㄐㄧㄚ', '盤子 ㄆㄢˊ ㄗ˙', '方面 ㄈㄤ ㄇㄧㄢˋ', '男聲 ㄋㄢˊ ㄕㄥ', '藍色 ㄌㄢˊ ㄙㄜˋ'],
             'ㄣ': ['恩人 ㄣ ㄖㄣˊ', '感恩 ㄍㄢˇ ㄣ', '根本 ㄍㄣ ㄅㄣˇ', '噴泉 ㄆㄣ ㄑㄩㄢˊ', '本身 ㄅㄣˇ ㄕㄣ', '盆栽 ㄆㄣˊ ㄗㄞ', '門鈴 ㄇㄣˊ ㄌㄧㄥˊ', '等到 ㄉㄥˇ ㄉㄠˋ', '準備 ㄓㄨㄣˇ ㄅㄟˋ', '南部 ㄋㄧㄢˊ ㄅㄨˋ'],
             'ㄤ': ['骯髒 ㄤ ㄗㄤ', '高昂 ㄍㄠ ㄤˊ', '手槍 ㄕㄡˇ ㄑㄧㄤ', '鋼琴 ㄍㄤ ㄑㄧㄣˊ', '胖子 ㄆㄤˋ ㄗ˙', '忙碌 ㄇㄤˊ ㄌㄨˋ', '方向 ㄈㄤ ㄒㄧㄤˋ', '文章 ㄨㄣˊ ㄓㄤ', '糖果 ㄊㄤˊ ㄍㄨㄛˇ', '陽光 ㄧㄤˊ ㄍㄨㄤ'],
@@ -357,6 +358,7 @@
         }
 
         // --- 1. 正式造詞單渲染引擎 (直式 A4) ---
+        // 修正重點：切換為標楷體，維持文字位置、標題留白與橫線間隔
         function renderFormalDocument() {
             const area = document.getElementById('capture-area');
             const captureContent = document.getElementById('capture-content');
@@ -371,7 +373,7 @@
                 let sectionMarginTop = sectionId === 'section-bottom' ? "25px" : "5px";
                 
                 const titleEl = document.createElement('div');
-                // 修正：增加 padding-bottom 從 12px 到 20px，讓橫線往下移動不黏字
+                // 區隔線 padding-bottom 20px (橫線下移)
                 titleEl.style.cssText = `border-bottom:4px solid #2563eb; margin-top:${sectionMarginTop}; margin-bottom:15px; width:100%; font-size:30px; font-weight:900; padding-bottom:20px; color:#334155;`;
                 titleEl.innerText = data.status === '隨機' ? `${baseTitle} 隨機生成造詞` : `${baseTitle} [${data.val}] 的造詞練習`;
                 captureContent.appendChild(titleEl);
@@ -390,7 +392,8 @@
                         const row = document.createElement('div'); 
                         row.style.cssText = `display:flex; flex-direction:row; align-items:center; justify-content:center; height:110px; width:100%; margin-bottom:5px;`;
                         const charEl = document.createElement('div'); charEl.innerText = char; 
-                        charEl.style.cssText = `font-family:'Noto Serif TC', serif; font-size:4.8rem; font-weight:900; color:#000; margin-right:15px; display:flex; align-items:center; justify-content:center; height:100px; margin-top:-52px;`;
+                        // 切換為標楷體，維持 -52px 置中補償
+                        charEl.style.cssText = `font-family:'標楷體', 'DFKai-SB', 'BiauKai', 'Apple LiSung', serif; font-size:4.8rem; font-weight:normal; color:#000; margin-right:15px; display:flex; align-items:center; justify-content:center; height:100px; margin-top:-52px;`;
                         
                         const zyBox = document.createElement('div'); 
                         zyBox.style.cssText = `position:relative; width:45px; height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:-7px;`;
@@ -415,7 +418,7 @@
         }
 
         // --- 2. 手寫練習單渲染引擎 (橫式 A4) ---
-        // 絕對鎖定版本，完全不准動
+        // 絕對保護，原封不動
         function renderPracticeDocument(targetId) {
             const area = document.getElementById('capture-area');
             const captureContent = document.getElementById('capture-content');
