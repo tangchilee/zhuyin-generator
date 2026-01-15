@@ -9,8 +9,8 @@
     <!-- 自動連結外部資料庫檔案 -->
     <script src="zhuyin_data.js"></script>
     <style>
-        /* 載入 Noto Sans TC 作為基礎介面字體 */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+        /* 載入 Noto Sans TC (黑體) 與 Noto Serif TC (宋體/作為標楷體在手機端的備援) */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@600;900&display=swap');
         
         :root {
             --char-size: 3.5rem;
@@ -32,10 +32,22 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 網頁預覽樣式：切換為標準標楷體 */
+        /* 網頁預覽樣式：優化字體相容性序列 */
         .word-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .char-unit { display: flex; flex-direction: row-reverse; align-items: center; justify-content: center; height: var(--unit-height); margin-bottom: 2px; }
-        .char-text { font-family: '標楷體', 'DFKai-SB', 'BiauKai', 'Apple LiSung', serif; font-size: var(--char-size); font-weight: normal; line-height: 1; display: flex; align-items: center; justify-content: center; width: calc(var(--char-size) * 1.1); height: var(--unit-height); color: #1e293b; }
+        .char-text { 
+            /* 依序嘗試：標楷體(Windows)、標楷體(Mac/iOS)、標楷體(通用)、宋體(手機端最端正備援) */
+            font-family: '標楷體', 'DFKai-SB', 'BiauKai', 'Apple LiSung', 'KaiTi', 'Noto Serif TC', serif; 
+            font-size: var(--char-size); 
+            font-weight: normal; 
+            line-height: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: calc(var(--char-size) * 1.1); 
+            height: var(--unit-height); 
+            color: #1e293b; 
+        }
         .zhuyin-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; height: var(--unit-height); width: calc(var(--zhuyin-font) * 2.4); margin-left: 1px; }
         .zhuyin-symbols { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: var(--zhuyin-font); line-height: 1.1; color: #2563eb; font-weight: bold; }
         
@@ -159,12 +171,9 @@
                 <input type="password" id="user-api-key" class="w-full px-5 py-4 rounded-2xl border-2 border-slate-300 focus:border-blue-500 focus:outline-none text-lg font-bold shadow-inner" placeholder="在此貼入 API 金鑰...">
             </div>
         </div>
-
-        <div id="globalError" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-lg p-4 bg-red-600 text-white rounded-xl text-center shadow-2xl z-50 font-bold"></div>
     </div>
 
-    <!-- 注音點選器容器 -->
-    <div id="zhuyin-picker"></div>
+    <!-- 輸出畫布容器 -->
     <div id="capture-area"><div id="capture-content"></div></div>
 
     <script>
@@ -276,49 +285,6 @@
             if (area) area.classList.toggle('hidden');
         }
 
-        function setupValidation() {
-            document.querySelectorAll('.zhuyin-input').forEach(input => {
-                input.addEventListener('input', (e) => {
-                    const section = e.target.closest('.section-block');
-                    const btnText = section.querySelector('.btn-text');
-                    let val = e.target.value.trim();
-                    if (val.length > 0) {
-                        const lastChar = val.charAt(val.length - 1);
-                        if (allZhuyin.includes(lastChar)) {
-                            e.target.value = lastChar;
-                            btnText.innerText = "產生造詞";
-                        } else { e.target.value = ""; btnText.innerText = "隨機產生造詞"; }
-                    } else { btnText.innerText = "隨機產生造詞"; }
-                });
-            });
-        }
-
-        function renderToSection(sectionId, words) {
-            const section = document.getElementById(sectionId);
-            const grid = section.querySelector('.word-grid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            words.forEach(item => {
-                const text = typeof item === 'string' ? item.split(' ')[0] : item.text;
-                const zyRaw = typeof item === 'string' ? item.split(' ').slice(1) : item.zhuyin.split(' ');
-                const card = document.createElement('div');
-                card.className = "bg-white border-2 border-slate-100 rounded-xl shadow-sm p-1.5 flex items-center justify-center";
-                let wordHTML = `<div class="word-container">`;
-                text.split('').forEach((char, i) => {
-                    const zyStr = zyRaw[i] || "";
-                    let symbols = '', tone = '', toneClass = '';
-                    for (let c of zyStr) {
-                        if (['ˊ', 'ˇ', 'ˋ'].includes(c)) { tone = c; toneClass = 'tone-side'; }
-                        else if (c === '˙') { tone = c; toneClass = 'tone-top'; }
-                        else if (c !== ' ') { symbols += `<span class="block">${c}</span>`; }
-                    }
-                    wordHTML += `<div class="char-unit"><div class="zhuyin-wrapper"><div class="zhuyin-symbols">${symbols}${tone ? `<div class="${toneClass}">${tone}</div>` : ''}</div></div><div class="char-text">${char}</div></div>`;
-                });
-                wordHTML += `</div>`; card.innerHTML = wordHTML; grid.appendChild(card);
-            });
-            section.querySelector('.result-area').classList.remove('hidden');
-        }
-
         async function handleSectionAction(sectionId) {
             const section = document.getElementById(sectionId);
             const inputField = section.querySelector('.zhuyin-input');
@@ -357,15 +323,39 @@
             renderToSection(sectionId, resultWords); btnText.innerText = oldBtnText;
         }
 
+        function renderToSection(sectionId, words) {
+            const section = document.getElementById(sectionId);
+            const grid = section.querySelector('.word-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            words.forEach(item => {
+                const text = typeof item === 'string' ? item.split(' ')[0] : item.text;
+                const zyRaw = typeof item === 'string' ? item.split(' ').slice(1) : item.zhuyin.split(' ');
+                const card = document.createElement('div');
+                card.className = "bg-white border-2 border-slate-100 rounded-xl shadow-sm p-1.5 flex items-center justify-center";
+                let wordHTML = `<div class="word-container">`;
+                text.split('').forEach((char, i) => {
+                    const zyStr = zyRaw[i] || "";
+                    let symbols = '', tone = '', toneClass = '';
+                    for (let c of zyStr) {
+                        if (['ˊ', 'ˇ', 'ˋ'].includes(c)) { tone = c; toneClass = 'tone-side'; }
+                        else if (c === '˙') { tone = c; toneClass = 'tone-top'; }
+                        else if (c !== ' ') { symbols += `<span class="block">${c}</span>`; }
+                    }
+                    wordHTML += `<div class="char-unit"><div class="zhuyin-wrapper"><div class="zhuyin-symbols">${symbols}${tone ? `<div class="${toneClass}">${tone}</div>` : ''}</div></div><div class="char-text">${char}</div></div>`;
+                });
+                wordHTML += `</div>`; card.innerHTML = wordHTML; grid.appendChild(card);
+            });
+            section.querySelector('.result-area').classList.remove('hidden');
+        }
+
         // --- 1. 正式造詞單渲染引擎 (直式 A4) ---
-        // 修正重點：切換為標楷體，維持文字位置、標題留白與橫線間隔
         function renderFormalDocument() {
             const area = document.getElementById('capture-area');
             const captureContent = document.getElementById('capture-content');
             area.style.width = "1000px"; area.style.height = "1414px";
             area.style.padding = "40px";
             
-            // 標題頂部間距 10px
             captureContent.innerHTML = `<div style="text-align:center; font-size:46px; font-weight:900; margin-top:10px; margin-bottom:20px; color:#1e293b;">注音造詞練習單</div>`;
             
             const addFormalSection = (sectionId, baseTitle) => {
@@ -373,7 +363,6 @@
                 let sectionMarginTop = sectionId === 'section-bottom' ? "25px" : "5px";
                 
                 const titleEl = document.createElement('div');
-                // 區隔線 padding-bottom 20px (橫線下移)
                 titleEl.style.cssText = `border-bottom:4px solid #2563eb; margin-top:${sectionMarginTop}; margin-bottom:15px; width:100%; font-size:30px; font-weight:900; padding-bottom:20px; color:#334155;`;
                 titleEl.innerText = data.status === '隨機' ? `${baseTitle} 隨機生成造詞` : `${baseTitle} [${data.val}] 的造詞練習`;
                 captureContent.appendChild(titleEl);
@@ -392,8 +381,8 @@
                         const row = document.createElement('div'); 
                         row.style.cssText = `display:flex; flex-direction:row; align-items:center; justify-content:center; height:110px; width:100%; margin-bottom:5px;`;
                         const charEl = document.createElement('div'); charEl.innerText = char; 
-                        // 切換為標楷體，維持 -52px 置中補償
-                        charEl.style.cssText = `font-family:'標楷體', 'DFKai-SB', 'BiauKai', 'Apple LiSung', serif; font-size:4.8rem; font-weight:normal; color:#000; margin-right:15px; display:flex; align-items:center; justify-content:center; height:100px; margin-top:-52px;`;
+                        // 字體與位移固定
+                        charEl.style.cssText = `font-family:'標楷體', 'DFKai-SB', 'BiauKai', 'Apple LiSung', 'KaiTi', 'Noto Serif TC', serif; font-size:4.8rem; font-weight:normal; color:#000; margin-right:15px; display:flex; align-items:center; justify-content:center; height:100px; margin-top:-52px;`;
                         
                         const zyBox = document.createElement('div'); 
                         zyBox.style.cssText = `position:relative; width:45px; height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:-7px;`;
@@ -418,7 +407,6 @@
         }
 
         // --- 2. 手寫練習單渲染引擎 (橫式 A4) ---
-        // 絕對保護，原封不動
         function renderPracticeDocument(targetId) {
             const area = document.getElementById('capture-area');
             const captureContent = document.getElementById('capture-content');
@@ -478,7 +466,22 @@
             captureContent.appendChild(grid);
         }
 
-        window.onload = function() { setupValidation(); };
+        window.onload = function() {
+            document.querySelectorAll('.zhuyin-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const section = e.target.closest('.section-block');
+                    const btnText = section.querySelector('.btn-text');
+                    let val = e.target.value.trim();
+                    if (val.length > 0) {
+                        const lastChar = val.charAt(val.length - 1);
+                        if (allZhuyin.includes(lastChar)) {
+                            e.target.value = lastChar;
+                            btnText.innerText = "產生造詞";
+                        } else { e.target.value = ""; btnText.innerText = "隨機產生造詞"; }
+                    } else { btnText.innerText = "隨機產生造詞"; }
+                });
+            });
+        };
 
         async function exportAsImage() {
             const btn = document.getElementById('export-img-btn');
@@ -514,3 +517,4 @@
     </script>
 </body>
 </html>
+
