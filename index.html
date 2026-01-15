@@ -88,12 +88,22 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </button>
-                <div id="manual-box" class="hidden absolute top-14 right-0 w-64 sm:w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl p-5 text-slate-700 text-left z-[1000]">
+                <div id="manual-box" class="hidden absolute top-14 right-0 w-64 sm:w-[400px] bg-white border border-slate-200 rounded-2xl shadow-2xl p-5 text-slate-700 text-left z-[1000]">
                     <h3 class="font-black text-blue-900 text-lg mb-3 flex items-center gap-2 border-b pb-2">📖 使用說明書</h3>
-                    <div class="space-y-3 text-sm leading-relaxed">
+                    <div class="space-y-4 text-sm leading-relaxed">
                         <p><strong>1. 隨機生成模式：</strong> 直接點擊按鈕，會從 37 個注音符號中隨機挑選生成詞彙。</p>
                         <p><strong>2. 指定注音模式：</strong> 點擊選擇注音，生成針對該符號的造詞。</p>
-                        <p><strong>3. 橫式練習單：</strong> 輸出優化大格子的手寫帖，採「直式造詞、橫式練習」佈局。</p>
+                        <p><strong>3. 練習單輸出：</strong> 可分區輸出注音符號練習單，練習單採「直式造詞、橫式書寫練習」的佈局。</p>
+                        <div>
+                            <p><strong>4. Gemini API 設定：</strong></p>
+                            <ol class="list-decimal ml-5 mt-1 space-y-1 text-[13px] text-slate-600">
+                                <li>前往 <a href="https://aistudio.google.com/" target="_blank" class="text-blue-600 font-bold underline">Google AI Studio</a>。</li>
+                                <li>使用您的 Google 帳號登入。</li>
+                                <li>點擊左側選單的「Get API key」。</li>
+                                <li>點擊「Create API key」按鈕產生金鑰並點擊複製。</li>
+                                <li>點擊本頁下方的「進階設定」，將金鑰貼入輸入框即可開啟 AI 生成功能。</li>
+                            </ol>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -138,7 +148,6 @@
             <button onclick="exportAsImage()" id="export-img-btn" class="bg-emerald-600 text-white py-4 rounded-xl hover:bg-emerald-700 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg"><span>🖼️</span> 輸出圖片</button>
             <button onclick="toggleSettings(event)" class="bg-slate-800 text-white py-4 rounded-xl hover:bg-slate-700 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg"><span>⚙️</span> 進階設定</button>
             
-            <!-- 調整藍色為深藍 bg-blue-800 增加白字對比度 -->
             <button onclick="exportPracticeImage('section-top')" id="export-practice-top-btn" class="bg-blue-800 text-white py-4 rounded-xl hover:bg-blue-900 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg text-center leading-tight">第一區練習單輸出</button>
             <button onclick="exportPracticeImage('section-bottom')" id="export-practice-bottom-btn" class="bg-blue-800 text-white py-4 rounded-xl hover:bg-blue-900 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg text-center leading-tight">第二區練習單輸出</button>
         </div>
@@ -162,43 +171,43 @@
         const apiKey = ""; 
         
         let SMART_LIB = {
-            'ㄅ': ['爸爸 ㄅㄚˋ ㄅㄚ˙', '筆記 ㄅㄧˇ ㄐㄧˋ', '餅乾 ㄅㄧㄥˇ ㄍㄢ', '布丁 ㄅㄨˋ ㄉㄧㄥ', '報紙 ㄅㄠˋ ㄓˇ', '冰箱 ㄅㄧㄥ ㄒㄧㄤ', '玻璃 ㄅㄛ ㄌㄧˊ', '包含 ㄅㄠ ㄏㄢˊ'],
-            'ㄆ': ['朋友 ㄆㄥˊ ㄧㄡˇ', '蘋果 ㄆㄧㄥˊ ㄍㄨㄛˇ', '皮球 ㄆㄧˊ ㄑㄧㄡˊ', '拍手 ㄆㄞ ㄕㄡˇ', '瀑布 ㄆㄨˋ ㄅㄨˋ', '爬山 ㄆㄚˊ ㄕㄢ', '漂亮 ㄆㄧㄠˋ ㄌㄧㄤˋ', '盤子 ㄆㄢˊ ㄗ˙'],
-            'ㄇ': ['媽媽 ㄇㄚ ㄇㄚ˙', '帽子 ㄇㄠˋ ㄗ˙', '妹妹 ㄇㄟˋ ㄇㄟ˙', '螞蟻 ㄇㄚˇ ㄧˇ', '門窗 ㄇㄣˊ ㄔㄨㄤ', '貓咪 ㄇㄠ ㄇㄧ', '麵包 ㄇㄧㄢˋ ㄅㄠ', '買菜 ㄇㄞˇ ㄘㄞˋ'],
-            'ㄈ': ['風車 ㄈㄥ ㄔㄜ', '飛機 ㄈㄟ ㄐㄧ', '房子 ㄈㄤˊ ㄗ˙', '父母 ㄈㄨˋ ㄇㄨˇ', '非常 ㄈㄟ ㄔㄤˊ', '方塊 ㄈㄤ ㄎㄨㄞˋ', '肥皂 ㄈㄟˊ ㄗㄠˋ', '分數 ㄈㄣ ㄕㄨˋ'],
-            'ㄉ': ['弟弟 ㄉㄧˋ ㄉㄧ˙', '電視 ㄉㄧㄢˋ ㄕˋ', '打球 ㄉㄚˇ ㄑㄧㄡˊ', '地球 ㄉㄧˋ ㄑㄧˊ', '大樹 ㄉㄚˋ ㄕㄨˋ', '蛋糕 ㄉㄢˋ ㄍㄠ', '低頭 ㄉㄧ ㄊㄡˊ', '冬天 ㄉㄨㄥ ㄊㄧㄢ'],
-            'ㄊ': ['太陽 ㄊㄞˋ ㄧㄤˊ', '天空 ㄊㄧㄢ ㄎㄨㄥ', '跳舞 ㄊㄧㄠˋ ㄨˇ', '糖果 ㄊㄤˊ ㄍㄨㄛˇ', '體操 ㄊㄧˇ ㄘㄠ', '兔子 ㄊㄨˋ ㄗ˙', '特別 ㄊㄜˋ ㄅㄧㄝˊ', '鐵路 ㄊㄧㄝˇ ㄌㄨˋ'],
-            'ㄋ': ['牛奶 ㄋㄧㄡˊ ㄋㄞˇ', '奶奶 ㄋㄞˇ ㄋㄞ˙', '南瓜 ㄋㄢˊ ㄍㄨㄚ', '泥土 ㄋㄧˊ ㄊㄨˇ', '能力 ㄋㄥˊ ㄌㄧˋ', '內容 ㄋㄟˋ ㄖㄨㄥˊ', '哪裡 ㄋㄚˇ ㄌㄧˇ', '女生 ㄋㄩˇ ㄕㄥ'],
-            'ㄌ': ['老師 ㄌㄠˇ ㄕ', '籃球 ㄌㄢˊ ㄑㄧㄡˊ', '月亮 ㄩㄝˋ ㄌㄧㄤˋ', '梨子 ㄌㄧˊ ㄗ˙', '禮物 ㄌㄧˇ ㄨˋ', '喇叭 ㄌㄚˇ ㄅㄚ', '力量 ㄌㄧˋ ㄌㄧㄤˋ', '路燈 ㄌㄨˋ ㄉㄥ'],
-            'ㄍ': ['哥哥 ㄍㄜ ㄍㄜ˙', '公園 ㄍㄨㄥ ㄩㄢˊ', '故事 ㄍㄨˋ ㄕˋ', '西瓜 ㄒㄧ ㄍㄨㄚ', '國旗 ㄍㄨㄛˊ ㄑㄧˊ', '乖巧 ㄍㄨㄞ ㄑㄧㄠˇ', '工作 ㄍㄨㄥ ㄗㄨㄛˋ', '公共 ㄍㄨㄥ ㄍㄨㄥˋ'],
-            'ㄎ': ['開水 ㄎㄞ ㄕㄨㄟˇ', '口袋 ㄎㄡˇ ㄉㄞˋ', '看書 ㄎㄢˋ ㄕㄨ', '烤肉 ㄎㄠˇ ㄖㄡˋ', '科學 ㄎㄜ ㄒㄩㄝˊ', '困難 ㄎㄨㄣˋ ㄋㄢˊ', '客廳 ㄎㄜˋ ㄊㄧㄥ', '空氣 ㄎㄨㄥ ㄑㄧˋ'],
-            'ㄏ': ['喝水 ㄏㄜ ㄕㄨㄟˇ', '河流 ㄏㄜˊ ㄌㄧㄡˊ', '蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ', '好人 ㄏㄠˇ ㄖㄣˊ', '花朵 ㄏㄨㄚ ㄉㄨㄛˇ', '火車 ㄏㄨㄛˇ ㄔㄜ', '海洋 ㄏㄞˇ ㄧㄤˊ', '回家 ㄏㄨㄟˊ ㄐㄧㄚ'],
-            'ㄐ': ['記者 ㄐㄧˋ ㄓㄜˇ', '簡單 ㄐㄧㄢˇ ㄉㄢ', '家人 ㄐㄧㄚ ㄖㄣˊ', '雞蛋 ㄐㄧ ㄉㄢˋ', '進步 ㄐㄧㄣˋ ㄅㄨˋ', '健康 ㄐㄧㄢˋ ㄎㄤ', '警察 ㄐㄧㄥˇ ㄔㄚˊ', '鏡子 ㄐㄧㄥˋ ㄗ˙'],
-            'ㄑ': ['秋天 ㄑㄧㄡ ㄊㄧㄢ', '氣球 ㄑㄧˋ ㄑㄧㄡˊ', '前面 ㄑㄧㄢˊ ㄇㄧㄢˋ', '蜻蜓 ㄑㄧㄥ ㄊㄧㄥˊ', '清潔 ㄑㄧㄥ ㄐㄧㄝˊ', '企鵝 ㄑㄧˋ ㄜˊ', '汽車 ㄑㄧˋ ㄔㄜ', '請問 ㄑㄧㄥˇ ㄨㄣˋ'],
-            'ㄒ': ['學校 ㄒㄩㄝˊ ㄒㄧㄠˋ', '小雞 ㄒㄧㄠˇ ㄐㄧ', '喜歡 ㄒㄧˇ ㄏㄨㄢ', '洗手 ㄒㄧˇ ㄕㄡˇ', '辛苦 ㄒㄧㄣ ㄎㄨˇ', '西瓜 ㄒㄧ ㄍㄨㄚ', '休息 ㄒㄧㄡ ㄒㄧˊ', '希望 ㄒㄧ ㄨㄤˋ'],
-            'ㄓ': ['知道 ㄓ ㄉㄠˋ', '中午 ㄓㄨㄥ ㄨˇ', '種植 ㄓㄨㄥˋ ㄓˊ', '真誠 ㄓㄣ ㄔㄥˊ', '準備 ㄓㄨㄣˇ ㄅㄟˋ', '紙張 ㄓˇ ㄓㄤ', '整理 ㄓㄥˇ ㄌㄧˇ', '重要 ㄓㄨㄥˋ ㄧㄠˋ'],
-            'ㄔ': ['吃飯 ㄔ ㄈㄢˋ', '春天 ㄔㄨㄣ ㄊㄧㄢ', '出發 ㄔㄨ ㄈㄚ', '成功 ㄔㄥˊ ㄍㄨㄥ', '車子 ㄔㄜ ㄗ˙', '嘗試 ㄔㄤˊ ㄕˋ', '窗戶 ㄔㄨㄤ ㄏㄨˋ', '長度 ㄔㄤˊ ㄉㄨˋ'],
-            'ㄕ': ['手錶 ㄕㄡˇ ㄅㄧㄠˇ', '水果 ㄕㄨㄟˇ ㄍㄨㄛˇ', '書本 ㄕㄨ ㄅㄣˇ', '山上 ㄕㄢ ㄕㄤˋ', '身上 ㄕㄣ ㄕㄤˋ', '樹木 ㄕㄨˋ ㄇㄨˋ', '世界 ㄕˋ ㄐㄧㄝˋ', '收穫 ㄕㄡ ㄏㄨㄛˋ'],
-            'ㄖ': ['日本 ㄖˋ ㄅㄣˇ', '日記 ㄖˋ ㄐㄧˋ', '日常 ㄖˋ ㄔㄤˊ', '如何 ㄖㄨˊ ㄏㄜˊ', '如果 ㄖㄨˊ ㄍㄨㄛˇ', '人員 ㄖㄣˊ ㄩㄢˊ', '認真 ㄖㄣˋ ㄓㄣ', '熱鬧 ㄖㄜˋ ㄋㄠˋ'],
-            'ㄗ': ['早上 ㄗㄠˇ ㄕㄤˋ', '做工 ㄗㄨㄛˋ ㄍㄨㄥ', '自大 ㄗˋ ㄉㄚˋ', '自由 ㄗˋ ㄧㄡˊ', '走路 ㄗㄡˇ ㄌㄨˋ', '足夠 ㄗㄨˊ ㄍㄡˋ', '字典 ㄗˋ ㄉㄧㄢˇ', '自己 ㄗˋ ㄐㄧˇ'],
-            'ㄘ': ['草地 ㄘㄠˇ ㄉㄧˋ', '彩虹 ㄘㄞˇ ㄏㄨㄥˊ', '測驗 ㄘㄜˋ ㄧㄢˋ', '曾經 ㄘㄥˊ ㄐㄧㄥ', '操場 ㄘㄠ ㄔㄤˇ', '層次 ㄘㄥˊ ㄘˋ', '材料 ㄘㄞˊ ㄌㄧㄠˋ', '次序 ㄘˋ ㄒㄩˋ'],
-            'ㄙ': ['思考 ㄙ ㄎㄠˇ', '四方 ㄙˋ ㄈㄤ', '速食 ㄙㄨˋ ㄕˊ', '司機 ㄙ ㄐㄧ', '森林 ㄙㄣ ㄌㄧㄣˊ', '送禮 ㄙㄨㄥˋ ㄌㄧˇ', '塑膠 ㄙㄨˋ ㄐㄧㄠ', '宿舍 ㄙㄨˋ ㄕㄜˋ'],
-            'ㄚ': ['阿姨 ㄚ ㄧˊ', '大家 ㄉㄚˋ ㄐㄧㄚ', '增加 ㄗㄥ ㄐㄧㄚ', '鴨子 ㄧㄚ ㄗ˙', '打雷 ㄉㄚˇ ㄌㄟˊ', '拉開 ㄌㄚ ㄎㄞ', '怕黑 ㄆㄚˋ ㄏㄟ', '哈哈 ㄏㄚ ㄏㄚ'],
-            'ㄛ': ['菠菜 ㄅㄛ ㄘㄞˋ', '播報 ㄅㄛ ㄅㄠˋ', '磨合 ㄇㄛˊ ㄏㄜˊ', '潑水 ㄆㄛ ㄕㄨㄟˇ', '破壞 ㄆㄛˋ ㄏㄨㄞˋ', '佛經 ㄈㄛˊ ㄐㄧㄥ', '薄膜 ㄅㄛˊ ㄇㄛˊ', '果凍 ㄍㄨㄛˇ ㄉㄨㄥˋ'],
-            'ㄜ': ['特色 ㄊㄜˋ ㄙㄜˋ', '河邊 ㄏㄜˊ ㄅㄧㄢ', '熱量 ㄖㄜˋ ㄌㄧㄤˋ', '值得 ㄓˊ ㄉㄜ˙', '測量 ㄘㄜˋ ㄌㄧㄤˊ', '刻苦 ㄎㄜˋ ㄎㄨˇ', '鵝蛋 ㄜˊ ㄉㄢˋ', '惡習 ㄜˋ ㄒㄧˊ'],
-            'ㄝ': ['爺爺 ㄧㄝˊ ㄧㄝ˙', '寫字 ㄒㄧㄝˇ ㄗˋ', '鞋子 ㄒㄧㄝˊ ㄗ˙', '謝謝 ㄒㄧㄝˋ ㄒㄧㄝ˙', '姐姐 ㄐㄧㄝˇ ㄐㄧㄝˇ', '咧嘴 ㄌㄧㄝˇ ㄗㄨㄟˇ', '夜晚 ㄧㄝˋ ㄨㄢˇ', '蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ'],
-            'ㄞ': ['愛心 ㄞˋ ㄒㄧㄣ', '矮小 ㄞˇ ㄒㄧㄠˇ', '應該 ㄧㄥ ㄍㄞ', '徘徊 ㄆㄞˊ ㄏㄨㄞˊ', '拍賣 ㄆㄞ ㄇㄞˋ', '外國 ㄨㄞˋ ㄍㄨㄛˊ', '害蟲 ㄏㄞˋ ㄔㄨㄥˊ', '來到 ㄌㄞˊ ㄉㄠˋ'],
-            'ㄟ': ['飛機 ㄈㄟ ㄐㄧ', '累積 ㄌㄟˇ ㄐㄧ', '杯子 ㄅㄟ ㄗ˙', '背後 ㄅㄟˋ ㄏㄡˋ', '歸類 ㄍㄨㄟ ㄌㄟˋ', '配音 ㄆㄟˋ ㄧㄣ', '沒有 ㄇㄟˊ ㄧㄡˇ', '對面 ㄉㄨˋ ㄇㄧㄢˋ'],
-            'ㄠ': ['驕傲 ㄐㄧㄠ ㄠˋ', '凹洞 ㄠ ㄉㄨㄥˋ', '宣告 ㄒㄩㄢ ㄍㄠˋ', '考試 ㄎㄠˇ ㄕˋ', '懊悔 ㄠˋ ㄏㄨㄟˇ', '包含 ㄅㄠ ㄏㄢˊ', '跑步 ㄆㄠˇ ㄅㄨˋ', '來到 ㄌㄞˊ ㄉㄠˋ'],
-            'ㄡ': ['歐美 ㄡ ㄇㄟˇ', '海鷗 ㄏㄞˇ ㄡ', '偶像 ㄡˇ ㄒㄧㄤˋ', '扣子 ㄎㄡˋ ㄗ˙', '後悔 ㄏㄡˋ ㄏㄨㄟˇ', '都有 ㄉㄡ ㄧㄡˇ', '透露 ㄊㄡˋ ㄌㄨˋ', '肉片 ㄖㄡˋ ㄆㄧㄢˋ'],
-            'ㄢ': ['安靜 ㄢ ㄐㄧㄥˋ', '暗號 ㄢˋ ㄏㄠˋ', '岸邊 ㄢˋ ㄅㄧㄢ', '答案 ㄉㄚˊ ㄢˋ', '安排 ㄢ ㄆㄞˊ', '搬家 ㄅㄢ ㄐㄧㄚ', '盤子 ㄆㄢˊ ㄗ˙', '方面 ㄈㄤ ㄇㄧㄢˋ'],
-            'ㄣ': ['恩人 ㄣ ㄖㄣˊ', '感恩 ㄍㄢˇ ㄣ', '根本 ㄍㄣ ㄅㄣˇ', '噴泉 ㄆㄣ ㄑㄩㄢˊ', '本身 ㄅㄣˇ ㄕㄣ', '盆栽 ㄆㄣˊ ㄗㄞ', '門鈴 ㄇㄣˊ ㄌㄧㄥˊ', '等到 ㄉㄥˇ ㄉㄠˋ'],
-            'ㄤ': ['骯髒 ㄤ ㄗㄤ', '高昂 ㄍㄠ ㄤˊ', '手槍 ㄕㄡˇ ㄑㄧㄤ', '鋼琴 ㄍㄤ ㄑㄧㄣˊ', '胖子 ㄆㄤˋ ㄗ˙', '忙碌 ㄇㄤˊ ㄌㄨˋ', '方向 ㄈㄤ ㄒㄧㄤˋ', '文章 ㄨㄣˊ ㄓㄤ'],
-            'ㄥ': ['風車 ㄈㄥ ㄔㄜ', '燈泡 ㄉㄥ ㄆㄠˋ', '冷靜 ㄌㄥˇ ㄐㄧㄥˋ', '能量 ㄋㄥˊ ㄌㄧˋ', '增加 ㄗㄥ ㄐㄧㄚ', '棚架 ㄆㄥˊ ㄐㄧㄚˋ', '蒙古 ㄇㄥˊ ㄍㄨˇ', '曾經 ㄘㄥˊ ㄐㄧㄥ'],
-            'ㄦ': ['兒子 ㄦˊ ㄗ˙', '兒童 ㄦˊ ㄊㄨㄥˊ', '耳環 ㄦˇ ㄏㄨㄢˊ', '二胡 ㄦˋ ㄏㄨˊ', '而去 ㄦˊ ㄑㄩˋ', '幼兒 ㄧㄡˋ ㄦˊ', '孤兒 ㄍㄨ ㄦˊ', '兒歌 ㄦˊ ㄍㄜ'],
-            'ㄧ': ['醫生 ㄧ ㄕㄥ', '衣櫃 ㄧ ㄍㄨㄟˋ', '一起 ㄧ ㄑㄧˇ', '意見 ㄧˋ ㄐㄧㄢˋ', '意外 ㄧˋ ㄨㄞˋ', '筆畫 ㄅㄧˇ ㄏㄨㄚˋ', '奇怪 ㄑㄧˊ ㄍㄨㄞˋ', '希望 ㄒㄧ ㄨㄤˋ'],
-            'ㄨ': ['屋頂 ㄨ ㄉㄧㄥˇ', '污泥 ㄨ ㄋㄧˊ', '無線 ㄨˊ ㄒㄧㄢˋ', '污染 ㄨ ㄖㄢˇ', '武器 ㄨˇ ㄑㄧˋ', '不但 ㄅㄨˊ ㄉㄢˋ', '瀑布 ㄆㄨˋ ㄅㄨˋ', '舒服 ㄕㄨ ㄈㄨˊ'],
-            'ㄩ': ['月亮 ㄩㄝˋ ㄌㄧㄤˋ', '玉米 ㄩˋ ㄇㄧˇ', '雨衣 ㄩˇ ㄧ', '語言 ㄩˇ ㄧㄢˊ', '浴室 ㄩˋ ㄕˋ', '魚缸 ㄩˊ ㄍㄤ', '宇宙 ㄩˇ ㄓㄡ', '愉快 ㄩˊ ㄎㄨㄞˋ']
+            'ㄅ': ['爸爸 ㄅㄚˋ ㄅㄚ˙', '杯子 ㄅㄟ ㄗ˙', '布丁 ㄅㄨˋ ㄉㄧㄥ', '白雲 ㄅㄞˊ ㄩㄣˊ', '鼻子 ㄅㄧˊ ㄗ˙', '包子 ㄅㄠ ㄗ˙', '筆記 ㄅㄧˇ ㄐㄧˋ', '冰箱 ㄅㄧㄥ ㄒㄧㄤ', '玻璃 ㄅㄛ ㄌㄧˊ', '餅乾 ㄅㄧㄥˇ ㄍㄢ'],
+            'ㄆ': ['朋友 ㄆㄥˊ ㄧㄡˇ', '蘋果 ㄆㄧㄥˊ ㄍㄨㄛˇ', '皮球 ㄆㄧˊ ㄑㄧㄡˊ', '拍手 ㄆㄞ ㄕㄡˇ', '瀑布 ㄆㄨˋ ㄅㄨˋ', '盤子 ㄆㄢˊ ㄗ˙', '漂亮 ㄆㄧㄠˋ ㄌㄧㄤˋ', '皮包 ㄆㄧˊ ㄅㄠ', '平安 ㄆㄧㄥ ㄢ', '跑步 ㄆㄠˇ ㄅㄨˋ'],
+            'ㄇ': ['媽媽 ㄇㄚ ㄇㄚ˙', '帽子 ㄇㄠˋ ㄗ˙', '妹妹 ㄇㄟˋ ㄇㄟ˙', '螞蟻 ㄇㄚˇ ㄧˇ', '門窗 ㄇㄣˊ ㄔㄨㄤ', '貓咪 ㄇㄠ ㄇㄧ', '麵包 ㄇㄧㄢˋ ㄅㄠ', '買菜 ㄇㄞˇ ㄘㄞˋ', '毛筆 ㄇㄠˊ ㄅㄧˇ', '秘密 ㄇㄧˋ ㄇㄧˋ'],
+            'ㄈ': ['風車 ㄈㄥ ㄔㄜ', '飛機 ㄈㄟ ㄐㄧ', '房子 ㄈㄤˊ ㄗ˙', '父母 ㄈㄨˋ ㄇㄨˇ', '非常 ㄈㄟ ㄔㄤˊ', '方塊 ㄈㄤ ㄎㄨㄞˋ', '肥皂 ㄈㄟˊ ㄗㄠˋ', '分數 ㄈㄣ ㄕㄨˋ', '風景 ㄈㄥ ㄐㄧㄥˇ', '風扇 ㄈㄥ ㄕㄢˋ'],
+            'ㄉ': ['弟弟 ㄉㄧˋ ㄉㄧ˙', '電視 ㄉㄧㄢˋ ㄕˋ', '打球 ㄉㄚˇ ㄑㄧㄡˊ', '地球 ㄉㄧˋ ㄑㄧˊ', '大樹 ㄉㄚˋ ㄕㄨˋ', '蛋糕 ㄉㄢˋ ㄍㄠ', '低頭 ㄉㄧ ㄊㄡˊ', '冬天 ㄉㄨㄥ ㄊㄧㄢ', '燈泡 ㄉㄥ ㄆㄠˋ', '豆漿 ㄉㄡˋ ㄐㄧㄤ'],
+            'ㄊ': ['太陽 ㄊㄞˋ ㄧㄤˊ', '天空 ㄊㄧㄢ ㄎㄨㄥ', '跳舞 ㄊㄧㄠˋ ㄨˇ', '糖果 ㄊㄤˊ ㄍㄨㄛˇ', '體操 ㄊㄧˇ ㄘㄠ', '兔子 ㄊㄨˋ ㄗ˙', '特別 ㄊㄜˋ ㄅㄧㄝˊ', '鐵路 ㄊㄧㄝˇ ㄌㄨˋ', '台階 ㄊㄞˊ ㄐㄧㄝ', '停車 ㄊㄧㄥ ㄔㄜ'],
+            'ㄋ': ['牛奶 ㄋㄧㄡˊ ㄋㄞˇ', '奶奶 ㄋㄞˇ ㄋㄞ˙', '南瓜 ㄋㄢˊ ㄍㄨㄚ', '泥土 ㄋㄧˊ ㄊㄨˇ', '能力 ㄋㄥˊ ㄌㄧˋ', '內容 ㄋㄟˋ ㄖㄨㄥˊ', '哪裡 ㄋㄚˇ ㄌㄧˇ', '女生 ㄋㄩˇ ㄕㄥ', '努力 ㄋㄨˇ ㄌㄧˋ', '念書 ㄋㄧㄢˋ ㄕㄨ'],
+            'ㄌ': ['老師 ㄌㄠˇ ㄕ', '籃球 ㄌㄢˊ ㄑㄧㄡˊ', '月亮 ㄩㄝˋ ㄌㄧㄤˋ', '梨子 ㄌㄧˊ ㄗ˙', '禮物 ㄌㄧˇ ㄨˋ', '喇叭 ㄌㄚˇ ㄅㄚ', '力量 ㄌㄧˋ ㄌㄧㄤˋ', '路燈 ㄌㄨˋ ㄉㄥ', '立刻 ㄌㄧˋ ㄎㄜˋ', '輪子 ㄌㄨㄣˊ ㄗ˙'],
+            'ㄍ': ['哥哥 ㄍㄜ ㄍㄜ˙', '公園 ㄍㄨㄥ ㄩㄢˊ', '故事 ㄍㄨˋ ㄕˋ', '西瓜 ㄒㄧ ㄍㄨㄚ', '國旗 ㄍㄨㄛˊ ㄑㄧˊ', '乖巧 ㄍㄨㄞ ㄑㄧㄠˇ', '工作 ㄍㄨㄥ ㄗㄨㄛˋ', '公共 ㄍㄨㄥ ㄍㄨㄥˋ', '鋼琴 ㄍㄤ ㄑㄧㄣˊ', '廣告 ㄍㄨㄤˇ ㄍㄠˋ'],
+            'ㄎ': ['開水 ㄎㄞ ㄕㄨㄟˇ', '口袋 ㄎㄡˇ ㄉㄞˋ', '看書 ㄎㄢˋ ㄕㄨ', '烤肉 ㄎㄠˇ ㄖㄡˋ', '科學 ㄎㄜ ㄒㄩㄝˊ', '困難 ㄎㄨㄣˋ ㄋㄢˊ', '客廳 ㄎㄜˋ ㄊㄧㄥ', '空氣 ㄎㄨㄥ ㄑㄧˋ', '苦瓜 ㄎㄨˇ ㄍㄨㄚ', '快慢 ㄎㄨㄞˋ ㄇㄢˋ'],
+            'ㄏ': ['喝水 ㄏㄜ ㄕㄨㄟˇ', '河流 ㄏㄜˊ ㄌㄧㄡˊ', '蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ', '好人 ㄏㄠˇ ㄖㄣˊ', '花朵 ㄏㄨㄚ ㄉㄨㄛˇ', '火車 ㄏㄨㄛˇ ㄔㄜ', '海洋 ㄏㄞˇ ㄧㄤˊ', '回家 ㄏㄨㄟˊ ㄐㄧㄚ', '後面 ㄏㄡˋ ㄇㄧㄢˋ', '紅包 ㄏㄨㄥˊ ㄅㄠ'],
+            'ㄐ': ['記者 ㄐㄧˋ ㄓㄜˇ', '簡單 ㄐㄧㄢˇ ㄉㄢ', '家人 ㄐㄧㄚ ㄖㄣˊ', '雞蛋 ㄐㄧ ㄉㄢˋ', '進步 ㄐㄧㄣˋ ㄅㄨˋ', '健康 ㄐㄧㄢˋ ㄎㄤ', '警察 ㄐㄧㄥˇ ㄔㄚˊ', '鏡子 ㄐㄧㄥˋ ㄗ˙', '加上 ㄐㄧㄚ ㄕㄤˋ', '景色 ㄐㄧㄥˇ ㄙㄜˋ'],
+            'ㄑ': ['秋天 ㄑㄧㄡ ㄊㄧㄢ', '氣球 ㄑㄧˋ ㄑㄧㄡˊ', '前面 ㄑㄧㄢˊ ㄇㄧㄢˋ', '蜻蜓 ㄑㄧㄥ ㄊㄧㄥˊ', '清潔 ㄑㄧㄥ ㄐㄧㄝˊ', '企鵝 ㄑㄧˋ ㄜˊ', '汽車 ㄑㄧˋ ㄔㄜ', '請問 ㄑㄧㄥˇ ㄨㄣˋ', '奇怪 ㄑㄧˊ ㄍㄨㄞˋ', '期待 ㄑㄧˊ ㄉㄞˋ'],
+            'ㄒ': ['學校 ㄒㄩㄝˊ ㄒㄧㄠˋ', '小雞 ㄒㄧㄠˇ ㄐㄧ', '喜歡 ㄒㄧˇ ㄏㄨㄢ', '洗手 ㄒㄧˇ ㄕㄡˇ', '辛苦 ㄒㄧㄣ ㄎㄨˇ', '西瓜 ㄒㄧ ㄍㄨㄚ', '休息 ㄒㄧㄡ ㄒㄧˊ', '希望 ㄒㄧ ㄨㄤˋ', '新年 ㄒㄧㄣ ㄋㄧㄢ', '下雨 ㄒㄧㄚˋ ㄩˇ'],
+            'ㄓ': ['知道 ㄓ ㄉㄠˋ', '中午 ㄓㄨㄥ ㄨˇ', '種植 ㄓㄨㄥˋ ㄓˊ', '真誠 ㄓㄣ ㄔㄥˊ', '準備 ㄓㄨㄣˇ ㄅㄟˋ', '紙張 ㄓˇ ㄓㄤ', '整理 ㄓㄥˇ ㄌㄧˇ', '重要 ㄓㄨㄥˋ ㄧㄠˋ', '蜘蛛 ㄓ ㄓㄨ', '指甲 ㄓˇ ㄐㄧㄚˇ'],
+            'ㄔ': ['吃飯 ㄔ ㄈㄢˋ', '春天 ㄔㄨㄣ ㄊㄧㄢ', '出發 ㄔㄨ ㄈㄚ', '成功 ㄔㄥˊ ㄍㄨㄥ', '車子 ㄔㄜ ㄗ˙', '嘗試 ㄔㄤˊ ㄕˋ', '窗戶 ㄔㄨㄤ ㄏㄨˋ', '長度 ㄔㄤˊ ㄉㄨˋ', '唱歌 ㄔㄤˋ ㄍㄜ', '超過 ㄔㄠ ㄍㄨㄛˋ'],
+            'ㄕ': ['手錶 ㄕㄡˇ ㄅㄧㄠˇ', '水果 ㄕㄨㄟˇ ㄍㄨㄛˇ', '書本 ㄕㄨ ㄅㄣˇ', '山上 ㄕㄢ ㄕㄤˋ', '身上 ㄕㄣ ㄕㄤˋ', '樹木 ㄕㄨˋ ㄇㄨˋ', '世界 ㄕˋ ㄐㄧㄝˋ', '收穫 ㄕㄡ ㄏㄨㄛˋ', '時間 ㄕˊ ㄐㄧㄢ', '生日 ㄕㄥ ㄖˋ'],
+            'ㄖ': ['日本 ㄖˋ ㄅㄣˇ', '日記 ㄖˋ ㄐㄧˋ', '日常 ㄖˋ ㄔㄤˊ', '如何 ㄖㄨˊ ㄏㄜˊ', '如果 ㄖㄨˊ ㄍㄨㄛˇ', '人員 ㄖㄣˊ ㄩㄢˊ', '認真 ㄖㄣˋ ㄓㄣ', '熱鬧 ㄖㄜˋ ㄋㄠˋ', '肉類 ㄖㄡˋ ㄌㄟˋ', '任何 ㄖㄣˋ ㄏㄜˊ'],
+            'ㄗ': ['早上 ㄗㄠˇ ㄕㄤˋ', '做工 ㄗㄨㄛˋ ㄍㄨㄥ', '自大 ㄗˋ ㄉㄚˋ', '自由 ㄗˋ ㄧㄡˊ', '走路 ㄗㄡˇ ㄌㄨˋ', '足夠 ㄗㄨˊ ㄍㄡˋ', '字典 ㄗˋ ㄉㄧㄢˇ', '自己 ㄗˋ ㄐㄧˇ', '左邊 ㄗㄨㄛˇ ㄅㄧㄢ', '昨天 ㄗㄨㄛˊ ㄊㄧㄢ'],
+            'ㄘ': ['草地 ㄘㄠˇ ㄉㄧˋ', '彩虹 ㄘㄞˇ ㄏㄨㄥˊ', '測驗 ㄘㄜˋ ㄧㄢˋ', '曾經 ㄘㄥˊ ㄐㄧㄥ', '操場 ㄘㄠ ㄔㄤˇ', '層次 ㄘㄥˊ ㄘˋ', '材料 ㄘㄞˊ ㄌㄧㄠˋ', '次序 ㄘˋ ㄒㄩˋ', '餐廳 ㄘㄢ ㄊㄧㄥ', '匆忙 ㄘㄨㄥ ㄇㄤˊ'],
+            'ㄙ': ['思考 ㄙ ㄎㄠˇ', '四方 ㄙˋ ㄈㄤ', '速食 ㄙㄨˋ ㄕˊ', '司機 ㄙ ㄐㄧ', '森林 ㄙㄣ ㄌㄧㄣˊ', '送禮 ㄙㄨㄥˋ ㄌㄧˇ', '塑膠 ㄙㄨˋ ㄐㄧㄠ', '宿舍 ㄙㄨˋ ㄕㄜˋ', '雖然 ㄙㄨㄟ ㄖㄢˊ', '所以 ㄙㄨㄛˇ ㄧˇ'],
+            'ㄚ': ['阿姨 ㄚ ㄧˊ', '大家 ㄉㄚˋ ㄐㄧㄚ', '增加 ㄗㄥ ㄐㄧㄚ', '鴨子 ㄧㄚ ㄗ˙', '打雷 ㄉㄚˇ ㄌㄟˊ', '拉開 ㄌㄚ ㄎㄞ', '怕黑 ㄆㄚˋ ㄏㄟ', '哈哈 ㄏㄚ ㄏㄚ', '沙發 ㄕㄚ ㄈㄚ', '下巴 ㄒㄧㄚˋ ㄅㄚ'],
+            'ㄛ': ['菠菜 ㄅㄛ ㄘㄞˋ', '播報 ㄅㄛ ㄅㄠˋ', '磨合 ㄇㄛˊ ㄏㄜˊ', '潑水 ㄆㄛ ㄕㄨㄟˇ', '破壞 ㄆㄛˋ ㄏㄨㄞˋ', '佛經 ㄈㄛˊ ㄐㄧㄥ', '薄膜 ㄅㄛˊ ㄇㄛˊ', '果凍 ㄍㄨㄛˇ ㄉㄨㄥˋ', '左手 ㄗㄨㄛˇ ㄕㄡˇ', '婆婆 ㄆㄛˊ ㄆㄛˊ'],
+            'ㄜ': ['特色 ㄊㄜˋ ㄙㄜˋ', '河邊 ㄏㄜˊ ㄅㄧㄢ', '熱量 ㄖㄜˋ ㄌㄧㄤˋ', '值得 ㄓˊ ㄉㄜ˙', '測量 ㄘㄜˋ ㄌㄧㄤˊ', '刻苦 ㄎㄜˋ ㄎㄨˇ', '鵝蛋 ㄜˊ ㄉㄢˋ', '惡習 ㄜˋ ㄒㄧˊ', '合適 ㄏㄜˊ ㄕˋ', '隔壁 ㄍㄜˊ ㄅㄧˋ'],
+            'ㄝ': ['爺爺 ㄧㄝˊ ㄧㄝ˙', '寫字 ㄒㄧㄝˇ ㄗˋ', '鞋子 ㄒㄧㄝˊ ㄗ˙', '謝謝 ㄒㄧㄝˋ ㄒㄧㄝ˙', '姐姐 ㄐㄧㄝˇ ㄐㄧㄝˇ', '咧嘴 ㄌㄧㄝˇ ㄗㄨㄟˇ', '夜晚 ㄧㄝˋ ㄨㄢˇ', '蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ', '解散 ㄐㄧㄝˇ ㄙㄢˋ', '斜坡 ㄒㄧㄝˊ ㄆㄛ'],
+            'ㄞ': ['愛心 ㄞˋ ㄒㄧㄣ', '矮小 ㄞˇ ㄒㄧㄠˇ', '應該 ㄧㄥ ㄍㄞ', '徘徊 ㄆㄞˊ ㄏㄨㄞˊ', '拍賣 ㄆㄞ ㄇㄞˋ', '外國 ㄨㄞˋ ㄍㄨㄛˊ', '害蟲 ㄏㄞˋ ㄔㄨㄥˊ', '來到 ㄌㄞˊ ㄉㄠˋ', '彩色 ㄘㄞˇ ㄙㄜˋ', '拆除 ㄔㄞ ㄔㄨˊ'],
+            'ㄟ': ['飛機 ㄈㄟ ㄐㄧ', '累積 ㄌㄟˇ ㄐㄧ', '杯子 ㄅㄟ ㄗ˙', '背後 ㄅㄟˋ ㄏㄡˋ', '歸類 ㄍㄨㄟ ㄌㄟˋ', '配音 ㄆㄟˋ ㄧㄣ', '沒有 ㄇㄟˊ ㄧㄡˇ', '對面 ㄉㄨㄟˋ ㄇㄧㄢˋ', '推開 ㄊㄨㄟ ㄎㄞ', '內容 ㄋㄟˋ ㄖㄨㄥˊ'],
+            'ㄠ': ['驕傲 ㄐㄧㄠ ㄠˋ', '凹洞 ㄠ ㄉㄨㄥˋ', '宣告 ㄒㄩㄢ ㄍㄠˋ', '考試 ㄎㄠˇ ㄕˋ', '懊悔 ㄠˋ ㄏㄨㄟˇ', '包含 ㄅㄠ ㄏㄢˊ', '跑步 ㄆㄠˇ ㄅㄨˋ', '來到 ㄌㄞˊ ㄉㄠˋ', '掃地 ㄙㄠˇ ㄉㄧˋ', '包子 ㄅㄠ ㄗ˙'],
+            'ㄡ': ['歐美 ㄡ ㄇㄟˇ', '海鷗 ㄏㄞˇ ㄡ', '偶像 ㄡˇ ㄒㄧㄤˋ', '扣子 ㄎㄡˋ ㄗ˙', '後悔 ㄏㄡˋ ㄏㄨㄟˇ', '都有 ㄉㄡ ㄧㄡˇ', '透露 ㄊㄡˋ ㄌㄨˋ', '肉片 ㄖㄡˋ ㄆㄧㄢˋ', '救命 ㄐㄧㄡˋ ㄇㄧㄥˋ', '狗狗 ㄍㄨˇ ㄍㄡˇ'],
+            'ㄢ': ['安靜 ㄢ ㄐㄧㄥˋ', '暗號 ㄢˋ ㄏㄠˋ', '岸邊 ㄢˋ ㄅㄧㄢ', '答案 ㄉㄚˊ ㄢˋ', '安排 ㄢ ㄆㄞˊ', '搬家 ㄅㄢ ㄐㄧㄚ', '盤子 ㄆㄢˊ ㄗ˙', '方面 ㄈㄤ ㄇㄧㄢˋ', '男聲 ㄋㄢˊ ㄕㄥ', '藍色 ㄌㄢˊ ㄙㄜˋ'],
+            'ㄣ': ['恩人 ㄣ ㄖㄣˊ', '感恩 ㄍㄢˇ ㄣ', '根本 ㄍㄣ ㄅㄣˇ', '噴泉 ㄆㄣ ㄑㄩㄢˊ', '本身 ㄅㄣˇ ㄕㄣ', '盆栽 ㄆㄣˊ ㄗㄞ', '門鈴 ㄇㄣˊ ㄌㄧㄥˊ', '等到 ㄉㄥˇ ㄉㄠˋ', '準備 ㄓㄨㄣˇ ㄅㄟˋ', '南部 ㄋㄧㄢˊ ㄅㄨˋ'],
+            'ㄤ': ['骯髒 ㄤ ㄗㄤ', '高昂 ㄍㄠ ㄤˊ', '手槍 ㄕㄡˇ ㄑㄧㄤ', '鋼琴 ㄍㄤ ㄑㄧㄣˊ', '胖子 ㄆㄤˋ ㄗ˙', '忙碌 ㄇㄤˊ ㄌㄨˋ', '方向 ㄈㄤ ㄒㄧㄤˋ', '文章 ㄨㄣˊ ㄓㄤ', '糖果 ㄊㄤˊ ㄍㄨㄛˇ', '陽光 ㄧㄤˊ ㄍㄨㄤ'],
+            'ㄥ': ['風車 ㄈㄥ ㄔㄜ', '燈泡 ㄉㄥ ㄆㄠˋ', '冷靜 ㄌㄥˇ ㄐㄧㄥˋ', '能量 ㄋㄥˊ ㄌㄧˋ', '增加 ㄗㄥ ㄐㄧㄚ', '棚架 ㄆㄥˊ ㄐㄧㄚˋ', '蒙古 ㄇㄥˊ ㄍㄨˇ', '曾經 ㄘㄥˊ ㄐㄧㄥ', '豐收 ㄈㄥ ㄕㄡ', '姓名 ㄒㄧㄥˋ ㄇㄧㄥˊ'],
+            'ㄦ': ['兒子 ㄦˊ ㄗ˙', '兒童 ㄦˊ ㄊㄨㄥˊ', '耳環 ㄦˇ ㄏㄨㄢˊ', '二胡 ㄦˋ ㄏㄨˊ', '而去 ㄦˊ ㄑㄩˋ', '幼兒 ㄧㄡˋ ㄦˊ', '孤兒 ㄍㄨ ㄦˊ', '兒歌 ㄦˊ ㄍㄜ', '而且 ㄦˊ ㄑㄧㄝˇ', '耳朵 ㄦˇ ㄉㄨㄛ˙'],
+            'ㄧ': ['醫生 ㄧ ㄕㄥ', '衣櫃 ㄧ ㄍㄨㄟˋ', '一起 ㄧ ㄑㄧˇ', '意見 ㄧˋ ㄐㄧㄢˋ', '意外 ㄧˋ ㄨㄞˋ', '筆畫 ㄅㄧˇ ㄏㄨㄚˋ', '奇怪 ㄑㄧˊ ㄍㄨㄞˋ', '希望 ㄒㄧ ㄨㄤˋ', '以此 ㄧˇ ㄘˇ', '衣服 ㄧ ㄈㄨˊ'],
+            'ㄨ': ['屋頂 ㄨ ㄉㄧㄥˇ', '污泥 ㄨ ㄋㄧˊ', '無線 ㄨˊ ㄒㄧㄢˋ', '污染 ㄨ ㄖㄢˇ', '武器 ㄨˇ ㄑㄧˋ', '不但 ㄅㄨˊ ㄉㄢˋ', '瀑布 ㄆㄨˋ ㄅㄨˋ', '舒服 ㄕㄨ ㄈㄨˊ', '烏鴉 ㄨ ㄧㄚ', '故意 ㄍㄨˋ ㄧˋ'],
+            'ㄩ': ['月亮 ㄩㄝˋ ㄌㄧㄤˋ', '玉米 ㄩˋ ㄇㄧˇ', '雨衣 ㄩˇ ㄧ', '語言 ㄩˇ ㄧㄢˊ', '浴室 ㄩˋ ㄕˋ', '魚缸 ㄩˊ ㄍㄤ', '宇宙 ㄩˇ ㄓㄡ', '愉快 ㄩˊ ㄎㄨㄞˋ', '遇到 ㄩˋ ㄉㄠˋ', '許多 ㄒㄩˇ ㄉㄨㄛ']
         };
 
         window.addEventListener('load', () => {
@@ -248,6 +257,7 @@
             let left = rect.left + window.scrollX;
             const pickerWidth = window.innerWidth > 640 ? 380 : 300; 
             if (left + pickerWidth > window.innerWidth) left = window.innerWidth - pickerWidth - 20;
+            if (left < 10) left = 10;
             picker.style.top = `${top}px`;
             picker.style.left = `${left}px`;
         }
@@ -346,126 +356,123 @@
             renderToSection(sectionId, resultWords); btnText.innerText = oldBtnText;
         }
 
-        // --- 核心渲染引擎：整合橫式與直式切換 ---
-        function renderToCanvas(isPractice = false, targetSectionId = null) {
+        // --- 1. 正式造詞單渲染引擎 (直式 A4) ---
+        function renderFormalDocument() {
             const area = document.getElementById('capture-area');
             const captureContent = document.getElementById('capture-content');
+            area.style.width = "1000px"; area.style.height = "1414px";
+            area.style.padding = "40px";
             
-            if (isPractice) {
-                area.style.width = "1414px"; area.style.height = "1000px"; // 橫向 A4
-                area.style.padding = "30px 40px";
-            } else {
-                area.style.width = "1000px"; area.style.height = "1414px"; // 直向 A4
-                area.style.padding = "40px";
-            }
-
-            let titleStr = "注音造詞練習單";
-            let subTitleStr = "";
-            if (isPractice && targetSectionId) {
-                const sectionLabel = targetSectionId === 'section-top' ? "第一區" : "第二區";
-                const data = sectionState[targetSectionId];
-                titleStr = "注音符號手寫練習單";
-                // 需求：括號內文字縮小
-                subTitleStr = `<span style="font-size: 26px; font-weight: 700; color: #64748b;">(${sectionLabel} ${data.status}生成造詞)</span>`;
-            }
-            captureContent.innerHTML = `<div style="text-align:center; font-size:46px; font-weight:900; margin-bottom:20px; color:#1e293b;">${titleStr}${subTitleStr}</div>`;
+            // 標題頂部間距 10px
+            captureContent.innerHTML = `<div style="text-align:center; font-size:46px; font-weight:900; margin-top:10px; margin-bottom:20px; color:#1e293b;">注音造詞練習單</div>`;
             
-            const addSection = (sectionId, baseTitle) => {
+            const addFormalSection = (sectionId, baseTitle) => {
                 const data = sectionState[sectionId]; if (data.words.length === 0) return;
+                let sectionMarginTop = sectionId === 'section-bottom' ? "25px" : "5px";
                 
                 const titleEl = document.createElement('div');
-                titleEl.style.cssText = `border-bottom:4px solid #2563eb; margin-bottom:20px; width:100%;`;
-                if (!isPractice) {
-                    titleEl.style.fontSize = "28px";
-                    titleEl.style.fontWeight = "900";
-                    titleEl.style.paddingBottom = "10px";
-                    titleEl.style.color = "#334155";
-                    titleEl.innerText = data.status === '隨機' ? `${baseTitle} 隨機生成造詞` : `${baseTitle} [${data.val}] 的造詞練習`;
-                } else {
-                    titleEl.style.height = "10px"; 
-                }
+                // 修正：增加 padding-bottom 從 12px 到 20px，讓橫線往下移動不黏字
+                titleEl.style.cssText = `border-bottom:4px solid #2563eb; margin-top:${sectionMarginTop}; margin-bottom:15px; width:100%; font-size:30px; font-weight:900; padding-bottom:20px; color:#334155;`;
+                titleEl.innerText = data.status === '隨機' ? `${baseTitle} 隨機生成造詞` : `${baseTitle} [${data.val}] 的造詞練習`;
                 captureContent.appendChild(titleEl);
                 
                 const grid = document.createElement('div'); 
-                if (isPractice) {
-                    grid.style.cssText = "display:grid; grid-template-columns:repeat(4, 1fr); gap:12px 12px; width:100%;";
-                } else {
-                    grid.style.cssText = "display:grid; grid-template-columns:repeat(4, 1fr); gap:25px 20px; width:100%;";
-                }
+                grid.style.cssText = "display:grid; grid-template-columns:repeat(4, 1fr); gap:15px 20px; width:100%;";
                 
                 data.words.forEach(item => {
                     const wordBox = document.createElement('div'); 
-                    if (isPractice) {
-                        wordBox.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 5px; background:#ffffff; border:3px solid #94a3b8; border-radius:30px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); gap:15px; min-height:410px;`;
-                    } else {
-                        wordBox.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; height:220px; background:#ffffff; border:3px solid #94a3b8; border-radius:40px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); overflow:visible;`;
-                    }
+                    wordBox.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; height:240px; background:#ffffff; border:3px solid #94a3b8; border-radius:40px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); overflow:visible;`;
                     
                     const text = typeof item === 'string' ? item.split(' ')[0] : item.text;
                     const zyRaw = typeof item === 'string' ? item.split(' ').slice(1) : item.zhuyin.split(' ');
                     
                     text.split('').forEach((char, i) => {
                         const row = document.createElement('div'); 
-                        if (isPractice) {
-                            row.style.cssText = `display:flex; flex-direction:row; align-items:center; gap:6px; height:160px;`;
-                        } else {
-                            row.style.cssText = `display:flex; flex-direction:row; align-items:center; justify-content:center; height:105px; width:100%; margin-bottom:8px;`;
-                        }
+                        row.style.cssText = `display:flex; flex-direction:row; align-items:center; justify-content:center; height:110px; width:100%; margin-bottom:5px;`;
+                        const charEl = document.createElement('div'); charEl.innerText = char; 
+                        charEl.style.cssText = `font-family:'Noto Serif TC', serif; font-size:4.8rem; font-weight:900; color:#000; margin-right:15px; display:flex; align-items:center; justify-content:center; height:100px; margin-top:-52px;`;
                         
-                        if (!isPractice) {
-                            const charEl = document.createElement('div'); charEl.innerText = char; 
-                            charEl.style.cssText = `font-family:'Noto Serif TC', serif; font-size:4.8rem; font-weight:900; color:#000; margin-right:15px; display:flex; align-items:center; justify-content:center; height:100px; margin-top:-72px;`;
-                            const zyBox = document.createElement('div'); zyBox.style.cssText = `position:relative; width:45px; height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:-27px;`;
-                            const zySymbols = document.createElement('div'); zySymbols.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:1.6rem; font-weight:bold; color:#2563eb; line-height:1.05;`;
-                            const zyStr = zyRaw[i] || ""; let symbols = "", tone = "", toneClass = "";
-                            for(let c of zyStr) { if(['ˊ','ˇ','ˋ'].includes(c)) { tone = c; toneClass = "side"; } else if(c === '˙') { tone = c; toneClass = "top"; } else { symbols += `<span style="display:block;">${c}</span>`; } }
-                            zySymbols.innerHTML = symbols; zyBox.appendChild(zySymbols);
-                            if(tone) {
-                                const toneEl = document.createElement('div'); toneEl.innerText = tone; toneEl.style.cssText = `position:absolute; color:#ef4444; font-weight:900;`;
-                                if(toneClass === 'side') { toneEl.style.right = "-12px"; toneEl.style.top = "50%"; toneEl.style.transform = "translateY(-50%)"; toneEl.style.fontSize = "1.5rem"; } else { toneEl.style.top = "2px"; toneEl.style.left = "50%"; toneEl.style.transform = "translateX(-50%)"; toneEl.style.fontSize = "1.6rem"; }
-                                zyBox.appendChild(toneEl);
-                            }
-                            row.appendChild(charEl); row.appendChild(zyBox);
-                        } else {
-                            // 練習單模式
-                            const buildBox = (isTrace) => {
-                                const b = document.createElement('div');
-                                b.style.cssText = `width:92px; height:160px; border:${isTrace ? '1px solid #94a3b8' : '2px dashed #64748b'}; border-radius:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; background:${isTrace ? '#f1f5f9' : 'transparent'};`;
-                                if (!isTrace) {
-                                    const h = document.createElement('div'); h.style.cssText = "position:absolute; top:50%; left:0; width:100%; border-top:1px dashed #cbd5e1;";
-                                    const v = document.createElement('div'); v.style.cssText = "position:absolute; top:0; left:50%; height:100%; border-left:1px dashed #cbd5e1;";
-                                    b.appendChild(h); b.appendChild(v);
-                                } else {
-                                    const zySymbols = document.createElement('div'); 
-                                    zySymbols.style.cssText = "display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:2.4rem; font-weight:bold; color:#94a3b8; line-height:1.05; margin-top:-20px;";
-                                    const zyStr = zyRaw[i] || ""; let symbols = "", tone = "", toneClass = "";
-                                    for(let c of zyStr) { if(['ˊ','ˇ','ˋ'].includes(c)) { tone = c; toneClass = "side"; } else if(c === '˙') { tone = c; toneClass = "top"; } else { symbols += `<span style="display:block;">${c}</span>`; } }
-                                    zySymbols.innerHTML = symbols; b.appendChild(zySymbols);
-                                    if(tone) {
-                                        const toneEl = document.createElement('div'); toneEl.innerText = tone; 
-                                        toneEl.style.cssText = "position:absolute; color:#94a3b8; font-weight:900;";
-                                        if(toneClass === 'side') { toneEl.style.right = "8px"; toneEl.style.top = "38%"; toneEl.style.transform = "translateY(-50%)"; toneEl.style.fontSize = "1.8rem"; } else { toneEl.style.top = "-12px"; toneEl.style.left = "50%"; toneEl.style.transform = "translateX(-50%)"; toneEl.style.fontSize = "1.9rem"; }
-                                        b.appendChild(toneEl);
-                                    }
-                                }
-                                return b;
-                            };
-                            row.appendChild(buildBox(true));  
-                            row.appendChild(buildBox(false)); 
-                            row.appendChild(buildBox(false)); 
+                        const zyBox = document.createElement('div'); 
+                        zyBox.style.cssText = `position:relative; width:45px; height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:-7px;`;
+                        
+                        const zySymbols = document.createElement('div'); zySymbols.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:1.6rem; font-weight:bold; color:#2563eb; line-height:1.05;`;
+                        const zyStr = zyRaw[i] || ""; let symbols = "", tone = "", toneClass = "";
+                        for(let c of zyStr) { if(['ˊ','ˇ','ˋ'].includes(c)) { tone = c; toneClass = "side"; } else if(c === '˙') { tone = c; toneClass = "top"; } else { symbols += `<span style="display:block;">${c}</span>`; } }
+                        zySymbols.innerHTML = symbols; zyBox.appendChild(zySymbols);
+                        if(tone) {
+                            const toneEl = document.createElement('div'); toneEl.innerText = tone; toneEl.style.cssText = `position:absolute; color:#ef4444; font-weight:900;`;
+                            if(toneClass === 'side') { toneEl.style.right = "-12px"; toneEl.style.top = "50%"; toneEl.style.transform = "translateY(-50%)"; toneEl.style.fontSize = "1.5rem"; } else { toneEl.style.top = "2px"; toneEl.style.left = "50%"; toneEl.style.transform = "translateX(-50%)"; toneEl.style.fontSize = "1.6rem"; }
+                            zyBox.appendChild(toneEl);
                         }
-                        wordBox.appendChild(row);
+                        row.appendChild(charEl); row.appendChild(zyBox); wordBox.appendChild(row);
                     });
                     grid.appendChild(wordBox);
                 });
                 captureContent.appendChild(grid);
             };
+            addFormalSection('section-top', "第一區"); 
+            addFormalSection('section-bottom', "第二區");
+        }
 
-            if (targetSectionId) {
-                addSection(targetSectionId, "第一區");
-            } else {
-                addSection('section-top', "第一區"); addSection('section-bottom', "第二區");
-            }
+        // --- 2. 手寫練習單渲染引擎 (橫式 A4) ---
+        // 絕對鎖定版本，完全不准動
+        function renderPracticeDocument(targetId) {
+            const area = document.getElementById('capture-area');
+            const captureContent = document.getElementById('capture-content');
+            area.style.width = "1414px"; area.style.height = "1000px";
+            area.style.padding = "30px 40px";
+            
+            const sectionLabel = targetId === 'section-top' ? "第一區" : "第二區";
+            const data = sectionState[targetId];
+            captureContent.innerHTML = `<div style="text-align:center; font-size:46px; font-weight:900; margin-bottom:20px; color:#1e293b;">注音符號手寫練習單 <span style="font-size: 26px; font-weight: 700; color: #64748b; margin-left: 10px;">(${sectionLabel} ${data.status}生成造詞)</span></div>`;
+            
+            const lineEl = document.createElement('div');
+            lineEl.style.cssText = `border-bottom:4px solid #2563eb; margin-bottom:20px; width:100%; height:10px;`;
+            captureContent.appendChild(lineEl);
+            
+            const grid = document.createElement('div'); 
+            grid.style.cssText = "display:grid; grid-template-columns:repeat(4, 1fr); gap:12px 12px; width:100%;";
+            
+            data.words.forEach(item => {
+                const wordBox = document.createElement('div'); 
+                wordBox.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 5px; background:#ffffff; border:3px solid #94a3b8; border-radius:30px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); gap:15px; min-height:410px;`;
+                
+                const text = typeof item === 'string' ? item.split(' ')[0] : item.text;
+                const zyRaw = typeof item === 'string' ? item.split(' ').slice(1) : item.zhuyin.split(' ');
+                
+                text.split('').forEach((char, i) => {
+                    const row = document.createElement('div'); 
+                    row.style.cssText = `display:flex; flex-direction:row; align-items:center; gap:6px; height:160px;`;
+                    
+                    const buildPracticeBox = (isTrace) => {
+                        const b = document.createElement('div');
+                        b.style.cssText = `width:92px; height:160px; border:${isTrace ? '1px solid #94a3b8' : '2px dashed #64748b'}; border-radius:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; background:${isTrace ? '#f1f5f9' : 'transparent'};`;
+                        if (!isTrace) {
+                            const h = document.createElement('div'); h.style.cssText = "position:absolute; top:50%; left:0; width:100%; border-top:1px dashed #cbd5e1;";
+                            const v = document.createElement('div'); v.style.cssText = "position:absolute; top:0; left:50%; height:100%; border-left:1px dashed #cbd5e1;";
+                            b.appendChild(h); b.appendChild(v);
+                        } else {
+                            const zySymbols = document.createElement('div'); 
+                            zySymbols.style.cssText = "display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:2.4rem; font-weight:bold; color:#94a3b8; line-height:1.05; margin-top:-20px;";
+                            const zyStr = zyRaw[i] || ""; let symbols = "", tone = "", toneClass = "";
+                            for(let c of zyStr) { if(['ˊ','ˇ','ˋ'].includes(c)) { tone = c; toneClass = "side"; } else if(c === '˙') { tone = c; toneClass = "top"; } else { symbols += `<span style="display:block;">${c}</span>`; } }
+                            zySymbols.innerHTML = symbols; b.appendChild(zySymbols);
+                            if(tone) {
+                                const toneEl = document.createElement('div'); toneEl.innerText = tone; toneEl.style.cssText = "position:absolute; color:#94a3b8; font-weight:900;";
+                                if(toneClass === 'side') { toneEl.style.right = "8px"; toneEl.style.top = "38%"; toneEl.style.transform = "translateY(-50%)"; toneEl.style.fontSize = "1.8rem"; } else { toneEl.style.top = "-12px"; toneEl.style.left = "50%"; toneEl.style.transform = "translateX(-50%)"; toneEl.style.fontSize = "1.9rem"; }
+                                b.appendChild(toneEl);
+                            }
+                        }
+                        return b;
+                    };
+                    row.appendChild(buildPracticeBox(true));  
+                    row.appendChild(buildPracticeBox(false)); 
+                    row.appendChild(buildPracticeBox(false)); 
+                    wordBox.appendChild(row);
+                });
+                grid.appendChild(wordBox);
+            });
+            captureContent.appendChild(grid);
         }
 
         window.onload = function() { setupValidation(); };
@@ -476,7 +483,7 @@
                 alert("請先產生造詞喔！"); return;
             }
             btn.disabled = true; btn.innerHTML = `<div class="loader"></div>`;
-            renderToCanvas(false); 
+            renderFormalDocument(); 
             await performCapture(`注音造詞單_${new Date().getTime()}.png`, 1000, 1414);
             btn.disabled = false; btn.innerHTML = `<span>🖼️</span> 輸出圖片`;
         }
@@ -488,7 +495,7 @@
             }
             const oldText = btn.innerText;
             btn.disabled = true; btn.innerHTML = `<div class="loader"></div>`;
-            renderToCanvas(true, sectionId); 
+            renderPracticeDocument(sectionId); 
             const label = sectionId === 'section-top' ? "第一區" : "第二區";
             await performCapture(`注音手寫練習單_橫式_${label}_${new Date().getTime()}.png`, 1414, 1000);
             btn.disabled = false; btn.innerHTML = oldText;
