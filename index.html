@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>注音造詞產生器 - 專業版</title>
+    <title>注音造詞產生器 - 暖心教育版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <!-- 自動連結外部資料庫檔案 -->
     <script src="zhuyin_data.js"></script>
     <style>
-        /* 載入 Noto Sans TC (黑體) 與 Noto Serif TC (宋體/作為標楷體在手機端的備援) */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@600;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         
         :root {
             --char-size: 3.5rem;
             --unit-height: 105px;
             --zhuyin-font: 1.25rem;
+            --primary-warm: #ff8c42;
         }
 
         @media (max-width: 640px) {
@@ -28,159 +29,205 @@
 
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #f0f4f8;
+            background-color: #fffcf0; /* 暖奶油色 */
+            background-image: radial-gradient(#ff8c4215 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #433422;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 網頁預覽樣式：優化字體相容性序列 */
+        /* 網頁預覽樣式：字體相容性序列 */
         .word-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .char-unit { display: flex; flex-direction: row-reverse; align-items: center; justify-content: center; height: var(--unit-height); margin-bottom: 2px; }
         .char-text { 
-            /* 依序嘗試：標楷體(Windows)、標楷體(Mac/iOS)、標楷體(通用)、宋體(手機端最端正備援) */
             font-family: '標楷體', 'DFKai-SB', 'BiauKai', 'Apple LiSung', 'KaiTi', 'Noto Serif TC', serif; 
             font-size: var(--char-size); 
-            font-weight: normal; 
             line-height: 1; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             width: calc(var(--char-size) * 1.1); 
             height: var(--unit-height); 
-            color: #1e293b; 
+            color: #2d241e; 
         }
         .zhuyin-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; height: var(--unit-height); width: calc(var(--zhuyin-font) * 2.4); margin-left: 1px; }
-        .zhuyin-symbols { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: var(--zhuyin-font); line-height: 1.1; color: #2563eb; font-weight: bold; }
+        .zhuyin-symbols { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: var(--zhuyin-font); line-height: 1.1; color: #d35400; font-weight: bold; }
         
-        .tone-side { position: absolute; right: -10px; top: 50%; transform: translateY(-50%); font-size: calc(var(--zhuyin-font) * 1.05); color: #ef4444; }
-        @media (max-width: 640px) { .tone-side { right: -6px; font-size: 0.8rem; } }
-        .tone-top { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: calc(var(--zhuyin-font) * 1.15); color: #ef4444; font-weight: 900; }
+        /* 聲調藍色凸顯 */
+        .tone-side { position: absolute; right: -10px; top: 50%; transform: translateY(-50%); font-size: calc(var(--zhuyin-font) * 1.05); color: #2563eb; }
+        .tone-top { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); font-size: calc(var(--zhuyin-font) * 1.15); color: #2563eb; font-weight: 900; }
 
-        /* 擷取畫布容器 */
-        #capture-area {
-            background: #ffffff;
-            position: absolute;
-            left: -9999px;
-            top: 0;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+        /* UI 組件美化 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 2rem;
+            box-shadow: 0 15px 35px -5px rgba(139, 69, 19, 0.08);
         }
 
-        /* 注音點選器 */
+        .warm-input {
+            background: #ffffff;
+            border: 2px solid #f9ebbe;
+            transition: all 0.3s ease;
+        }
+        .warm-input:focus {
+            border-color: var(--primary-warm);
+            box-shadow: 0 0 0 4px rgba(255, 140, 66, 0.1);
+            outline: none;
+        }
+
+        .btn-sunset {
+            background: linear-gradient(135deg, #ff8c42, #ffb347);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 140, 66, 0.25);
+        }
+        .btn-sunset:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 140, 66, 0.35);
+        }
+
+        /* 擷取畫布隱藏區 */
+        #capture-area { background: #ffffff; position: absolute; left: -9999px; top: 0; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
+
         #zhuyin-picker {
             display: none;
             position: absolute;
             z-index: 2000;
             background: white;
-            border: 2px solid #cbd5e1;
+            border: 2px solid #f9ebbe;
             border-radius: 1.5rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
             padding: 16px;
             grid-template-columns: repeat(10, 1fr);
             gap: 8px;
-            width: auto;
             max-width: 95vw;
         }
-        @media (max-width: 640px) { #zhuyin-picker { grid-template-columns: repeat(6, 1fr); padding: 12px; gap: 6px; } }
-        .picker-key { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: #f1f5f9; border-radius: 10px; font-weight: 900; color: #1d4ed8; cursor: pointer; transition: all 0.2s; border: 1px solid #e2e8f0; font-size: 1.2rem; }
-        .picker-key:hover { background: #dbeafe; border-color: #3b82f6; transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        @media (max-width: 640px) { #zhuyin-picker { grid-template-columns: repeat(6, 1fr); } }
+        .picker-key { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #fffcf0; border-radius: 12px; font-weight: 700; color: #d35400; cursor: pointer; transition: all 0.2s; border: 1px solid #f9ebbe; }
+        .picker-key:hover { background: #ffedd5; transform: scale(1.1); border-color: #ff8c42; }
 
-        .loader { border: 2px solid #f3f3f3; border-top: 2px solid #3b82f6; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display: inline-block; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #ff8c42; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="min-h-screen py-4 sm:py-6 px-4 relative" onclick="closeAllPickers()">
+<body class="min-h-screen py-8 px-4" onclick="closeAllPickers()">
     
-    <div class="max-w-5xl mx-auto">
-        <div class="relative text-center mb-8 sm:mb-10">
-            <h1 class="text-3xl sm:text-5xl font-black text-blue-900 tracking-tight px-12">注音造詞產生器</h1>
-            <div id="help-btn-container" class="absolute right-0 top-1/2 -translate-y-1/2 z-[999]">
-                <button onclick="toggleManual(event)" class="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-lg flex items-center justify-center transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+    <div class="max-w-4xl mx-auto">
+        <!-- 頂部標題 -->
+        <div class="text-center mb-12 relative">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-100 text-orange-600 rounded-full text-xs font-bold tracking-widest uppercase mb-4 shadow-sm">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> 教學輔助工具
+            </div>
+            <h1 class="text-4xl sm:text-6xl font-black text-orange-950 tracking-tight mb-4 drop-shadow-sm">注音造詞產生器</h1>
+            <p class="text-orange-800/60 font-medium max-w-lg mx-auto leading-relaxed">為小朋友打造最溫馨、專業的識字與書寫練習空間</p>
+            
+            <div id="help-btn-container" class="absolute right-0 top-0">
+                <button onclick="toggleManual(event)" class="bg-white hover:bg-orange-50 text-orange-500 w-12 h-12 rounded-2xl shadow-sm flex items-center justify-center transition-all border border-orange-100">
+                    <i data-lucide="help-circle"></i>
                 </button>
-                <div id="manual-box" class="hidden absolute top-14 right-0 w-64 sm:w-[400px] bg-white border border-slate-200 rounded-2xl shadow-2xl p-5 text-slate-700 text-left z-[1000]">
-                    <h3 class="font-black text-blue-900 text-lg mb-3 flex items-center gap-2 border-b pb-2">📖 使用說明書</h3>
-                    <div class="space-y-4 text-sm leading-relaxed">
-                        <p><strong>1. 隨機生成模式：</strong> 直接點擊按鈕，會從 37 個注音符號中隨機挑選生成詞彙。</p>
-                        <p><strong>2. 指定注音模式：</strong> 點擊選擇注音，生成針對該符號的造詞。</p>
-                        <p><strong>3. 練習單輸出：</strong> 可分區輸出注音符號練習單，練習單採「直式造詞、橫式書寫練習」的佈局。</p>
-                        <div>
-                            <p><strong>4. Gemini API 設定：</strong></p>
-                            <ol class="list-decimal ml-5 mt-1 space-y-1 text-[13px] text-slate-600">
-                                <li>前往 <a href="https://aistudio.google.com/" target="_blank" class="text-blue-600 font-bold underline">Google AI Studio</a>。</li>
-                                <li>使用您的 Google 帳號登入。</li>
-                                <li>點擊左側選單的「Get API key」。</li>
-                                <li>點擊「Create API key」按鈕產生金鑰並點擊複製。</li>
-                                <li>點擊本頁下方的「進階設定」，將金鑰貼入輸入框即可開啟 AI 生成功能。</li>
-                            </ol>
-                        </div>
+                <div id="manual-box" class="hidden absolute top-14 right-0 w-72 sm:w-[420px] glass-card p-6 z-[1000] ring-1 ring-orange-900/5 text-left">
+                    <h3 class="font-black text-orange-900 text-lg mb-4 flex items-center gap-2 border-b border-orange-100 pb-2">
+                        <i data-lucide="book-open" class="w-5 h-5 text-orange-500"></i> 使用說明
+                    </h3>
+                    <div class="space-y-4 text-sm font-medium text-orange-900/70">
+                        <p>1. <span class="text-orange-600">隨機生成</span>：直接點擊按鈕，由 AI 或詞庫隨機挑選 8 個詞彙。</p>
+                        <p>2. <span class="text-orange-600">指定注音</span>：點擊輸入框選擇特定注音符號生成造詞。</p>
+                        <p>3. <span class="text-orange-600">練習單輸出</span>：可分區輸出注音練習單，採「直式造詞、橫式書寫練習」佈局。</p>
+                        <p>4. <span class="text-orange-600">Gemini API 設定</span>：導入自己的 API 金鑰可開啟 AI 即時生成功能，這能讓造詞跳脫固定詞庫，根據注音獲取更豐富、現代化且與時俱進的詞彙內容，提升教學的多樣性與廣度。</p>
+                        <ul class="text-[12px] list-disc ml-8 space-y-1">
+                            <li>前往 <a href="https://aistudio.google.com/" target="_blank" class="text-orange-600 underline">Google AI Studio</a> 登入並產生金鑰。</li>
+                            <li>點擊下方「進階 API 設定」貼入金鑰即可啟用 AI。</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 第一練習區 -->
-        <div id="section-top" class="mb-8 sm:mb-12 section-block">
-            <div class="text-blue-600 font-black mb-4 flex items-center gap-2 px-1 text-xl sm:text-3xl">
-                <span class="bg-blue-600 text-white px-2 py-0.5 rounded-lg text-sm sm:text-base font-bold">第一區</span> 上半部練習
-            </div>
-            <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-xl shadow-blue-100/30 mb-6 border border-blue-50">
-                <div class="flex flex-row gap-2 items-center justify-center">
-                    <input type="text" class="zhuyin-input w-1/2 px-2 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-blue-400 focus:bg-white focus:outline-none text-xl text-center font-black" placeholder="選擇注音" readonly onclick="openZhuyinPicker(event, this)">
-                    <button onclick="handleSectionAction('section-top')" class="action-btn w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 px-2 rounded-xl transition-all shadow-lg text-sm sm:text-xl flex items-center justify-center">
-                        <span class="btn-text">隨機產生造詞</span>
-                    </button>
+        <!-- 練習操作區 -->
+        <div class="space-y-8 mb-12">
+            <!-- 第一區 -->
+            <div id="section-top" class="section-block">
+                <div class="glass-card p-8 border-t-4 border-orange-400">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-orange-500 text-white rounded-xl flex items-center justify-center font-black shadow-lg shadow-orange-200">1</div>
+                        <h2 class="text-2xl font-black text-orange-900">第一區：上半部造詞</h2>
+                    </div>
+                    <!-- 按鈕佈局並列 1:1 -->
+                    <div class="flex flex-row gap-4 w-full">
+                        <div class="relative w-1/2 group">
+                            <input type="text" class="zhuyin-input warm-input w-full px-2 sm:px-6 py-4 rounded-2xl text-lg sm:text-xl text-center font-black cursor-pointer" placeholder="請選擇注音" readonly onclick="openZhuyinPicker(event, this)">
+                            <i data-lucide="chevron-down" class="hidden sm:block absolute right-4 top-1/2 -translate-y-1/2 text-orange-300 group-hover:text-orange-500 transition-colors"></i>
+                        </div>
+                        <button onclick="handleSectionAction('section-top')" class="action-btn w-1/2 btn-sunset py-4 rounded-2xl font-black text-base sm:text-lg transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4 sm:w-5 sm:h-5"></i> <span class="btn-text">產生造詞</span>
+                        </button>
+                    </div>
+                    <div class="result-area hidden mt-10 pt-8 border-t border-orange-100/50">
+                        <div class="word-grid grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+                    </div>
                 </div>
             </div>
-            <div class="result-area hidden"><div class="word-grid grid grid-cols-4 gap-1.5 sm:gap-4 md:gap-6"></div></div>
-        </div>
 
-        <hr class="section-divider border-dashed border-slate-300 mb-8 sm:mb-12">
-
-        <!-- 第二練習區 -->
-        <div id="section-bottom" class="mb-8 sm:mb-12 section-block">
-            <div class="text-indigo-600 font-black mb-4 flex items-center gap-2 px-1 text-xl sm:text-3xl">
-                <span class="bg-indigo-600 text-white px-2 py-0.5 rounded-lg text-sm sm:text-base font-bold">第二區</span> 下半部練習
-            </div>
-            <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-xl shadow-indigo-100/30 mb-6 border border-indigo-50">
-                <div class="flex flex-row gap-2 items-center justify-center">
-                    <input type="text" class="zhuyin-input w-1/2 px-2 py-4 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-indigo-400 focus:bg-white focus:outline-none text-xl text-center font-black" placeholder="選擇注音" readonly onclick="openZhuyinPicker(event, this)">
-                    <button onclick="handleSectionAction('section-bottom')" class="action-btn w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 px-2 rounded-xl transition-all shadow-lg text-sm sm:text-xl flex items-center justify-center">
-                        <span class="btn-text">隨機產生造詞</span>
-                    </button>
+            <!-- 第二區 -->
+            <div id="section-bottom" class="section-block">
+                <div class="glass-card p-8 border-t-4 border-amber-400">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-amber-500 text-white rounded-xl flex items-center justify-center font-black shadow-lg shadow-amber-200">2</div>
+                        <h2 class="text-2xl font-black text-amber-900">第二區：下半部造詞</h2>
+                    </div>
+                    <!-- 按鈕佈局並列 1:1 -->
+                    <div class="flex flex-row gap-4 w-full">
+                        <div class="relative w-1/2 group">
+                            <input type="text" class="zhuyin-input warm-input w-full px-2 sm:px-6 py-4 rounded-2xl text-lg sm:text-xl text-center font-black cursor-pointer" placeholder="請選擇注音" readonly onclick="openZhuyinPicker(event, this)">
+                            <i data-lucide="chevron-down" class="hidden sm:block absolute right-4 top-1/2 -translate-y-1/2 text-amber-300 group-hover:text-amber-500 transition-colors"></i>
+                        </div>
+                        <button onclick="handleSectionAction('section-bottom')" class="action-btn w-1/2 bg-gradient-to-br from-amber-400 to-amber-500 text-white py-4 rounded-2xl font-black text-base sm:text-lg shadow-lg shadow-amber-100 transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5">
+                            <i data-lucide="sparkles" class="w-4 h-4 sm:w-5 sm:h-5"></i> <span class="btn-text">產生造詞</span>
+                        </button>
+                    </div>
+                    <div class="result-area hidden mt-10 pt-8 border-t border-amber-100/50">
+                        <div class="word-grid grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+                    </div>
                 </div>
             </div>
-            <div class="result-area hidden"><div class="word-grid grid grid-cols-4 gap-1.5 sm:gap-4 md:gap-6"></div></div>
         </div>
 
-        <!-- 按鈕操作區 2x2 排列 -->
-        <div class="mt-4 mb-4 grid grid-cols-2 gap-4 justify-center px-4 w-full max-w-4xl mx-auto">
-            <button onclick="exportAsImage()" id="export-img-btn" class="bg-emerald-600 text-white py-4 rounded-xl hover:bg-emerald-700 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg"><span>🖼️</span> 輸出圖片</button>
-            <button onclick="toggleSettings(event)" class="bg-slate-800 text-white py-4 rounded-xl hover:bg-slate-700 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg"><span>⚙️</span> 進階設定</button>
-            
-            <button onclick="exportPracticeImage('section-top')" id="export-practice-top-btn" class="bg-blue-800 text-white py-4 rounded-xl hover:bg-blue-900 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg text-center leading-tight">第一區練習單輸出</button>
-            <button onclick="exportPracticeImage('section-bottom')" id="export-practice-bottom-btn" class="bg-blue-800 text-white py-4 rounded-xl hover:bg-blue-900 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-sm sm:text-lg text-center leading-tight">第二區練習單輸出</button>
+        <!-- 功能輸出按鈕區 -->
+        <div class="grid grid-cols-2 gap-4 mb-12">
+            <button onclick="exportAsImage()" id="export-img-btn" class="bg-emerald-500 text-white py-5 rounded-2xl hover:bg-emerald-600 transition-all font-black shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 text-lg">
+                <i data-lucide="image"></i> 輸出圖片
+            </button>
+            <button onclick="toggleSettings(event)" class="bg-zinc-800 text-white py-5 rounded-2xl hover:bg-zinc-900 transition-all font-black shadow-xl shadow-zinc-200 flex items-center justify-center gap-3 text-lg">
+                <i data-lucide="settings-2"></i> 進階 API 設定
+            </button>
+            <button onclick="exportPracticeImage('section-top')" class="btn-sunset text-white py-5 rounded-2xl hover:opacity-90 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-lg">
+                <i data-lucide="printer" class="w-5 h-5"></i> 第一區練習單輸出
+            </button>
+            <button onclick="exportPracticeImage('section-bottom')" class="btn-sunset text-white py-5 rounded-2xl hover:opacity-90 transition-all font-black shadow-lg flex items-center justify-center gap-2 text-lg">
+                <i data-lucide="printer" class="w-5 h-5"></i> 第二區練習單輸出
+            </button>
         </div>
 
-        <div id="settings-area" class="hidden mb-12 p-5 bg-slate-100 border-2 border-slate-200 rounded-[2rem] transition-all">
-            <div class="flex flex-col gap-4 px-2 text-left">
-                <p class="text-slate-600 font-black text-lg text-center">Gemini API Key 設定</p>
-                <input type="password" id="user-api-key" class="w-full px-5 py-4 rounded-2xl border-2 border-slate-300 focus:border-blue-500 focus:outline-none text-lg font-bold shadow-inner" placeholder="在此貼入 API 金鑰...">
+        <!-- API Input -->
+        <div id="settings-area" class="hidden mb-12 p-8 glass-card">
+            <div class="flex flex-col gap-4 text-center">
+                <label class="text-orange-900 font-black text-xl flex items-center justify-center gap-2">
+                    <i data-lucide="key" class="w-5 h-5 text-orange-500"></i> 請輸入 Gemini API 金鑰
+                </label>
+                <input type="password" id="user-api-key" class="warm-input px-6 py-4 rounded-2xl text-center font-bold text-lg" placeholder="在此貼上您的金鑰...">
             </div>
         </div>
     </div>
 
-    <!-- 輸出畫布容器 -->
+    <div id="zhuyin-picker"></div>
     <div id="capture-area"><div id="capture-content"></div></div>
 
     <script>
         const allZhuyin = "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦㄧㄨㄩ";
         const apiKey = ""; 
-        
-        let SMART_LIB = {
+
+        const SMART_LIB = {
             'ㄅ': ['爸爸 ㄅㄚˋ ㄅㄚ˙', '杯子 ㄅㄟ ㄗ˙', '布丁 ㄅㄨˋ ㄉㄧㄥ', '白雲 ㄅㄞˊ ㄩㄣˊ', '鼻子 ㄅㄧˊ ㄗ˙', '包子 ㄅㄠ ㄗ˙', '筆記 ㄅㄧˇ ㄐㄧˋ', '冰箱 ㄅㄧㄥ ㄒㄧㄤ', '玻璃 ㄅㄛ ㄌㄧˊ', '餅乾 ㄅㄧㄥˇ ㄍㄢ'],
             'ㄆ': ['朋友 ㄆㄥˊ ㄧㄡˇ', '蘋果 ㄆㄧㄥˊ ㄍㄨㄛˇ', '皮球 ㄆㄧˊ ㄑㄧㄡˊ', '拍手 ㄆㄞ ㄕㄡˇ', '瀑布 ㄆㄨˋ ㄅㄨˋ', '盤子 ㄆㄢˊ ㄗ˙', '漂亮 ㄆㄧㄠˋ ㄌㄧㄤˋ', '皮包 ㄆㄧˊ ㄅㄠ', '平安 ㄆㄧㄥ ㄢ', '跑步 ㄆㄠˇ ㄅㄨˋ'],
             'ㄇ': ['媽媽 ㄇㄚ ㄇㄚ˙', '帽子 ㄇㄠˋ ㄗ˙', '妹妹 ㄇㄟˋ ㄇㄟ˙', '螞蟻 ㄇㄚˇ ㄧˇ', '門窗 ㄇㄣˊ ㄔㄨㄤ', '貓咪 ㄇㄠ ㄇㄧ', '麵包 ㄇㄧㄢˋ ㄅㄠ', '買菜 ㄇㄞˇ ㄘㄞˋ', '毛筆 ㄇㄠˊ ㄅㄧˇ', '秘密 ㄇㄧˋ ㄇㄧˋ'],
@@ -193,8 +240,8 @@
             'ㄎ': ['開水 ㄎㄞ ㄕㄨㄟˇ', '口袋 ㄎㄡˇ ㄉㄞˋ', '看書 ㄎㄢˋ ㄕㄨ', '烤肉 ㄎㄠˇ ㄖㄡˋ', '科學 ㄎㄜ ㄒㄩㄝˊ', '困難 ㄎㄨㄣˋ ㄋㄢˊ', '客廳 ㄎㄜˋ ㄊㄧㄥ', '空氣 ㄎㄨㄥ ㄑㄧˋ', '苦瓜 ㄎㄨˇ ㄍㄨㄚ', '快慢 ㄎㄨㄞˋ ㄇㄢˋ'],
             'ㄏ': ['喝水 ㄏㄜ ㄕㄨㄟˇ', '河流 ㄏㄜˊ ㄌㄧㄡˊ', '蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ', '好人 ㄏㄠˇ ㄖㄣˊ', '花朵 ㄏㄨㄚ ㄉㄨㄛˇ', '火車 ㄏㄨㄛˇ ㄔㄜ', '海洋 ㄏㄞˇ ㄧㄤˊ', '回家 ㄏㄨㄟˊ ㄐㄧㄚ', '後面 ㄏㄡˋ ㄇㄧㄢˋ', '紅包 ㄏㄨㄥˊ ㄅㄠ'],
             'ㄐ': ['記者 ㄐㄧˋ ㄓㄜˇ', '簡單 ㄐㄧㄢˇ ㄉㄢ', '家人 ㄐㄧㄚ ㄖㄣˊ', '雞蛋 ㄐㄧ ㄉㄢˋ', '進步 ㄐㄧㄣˋ ㄅㄨˋ', '健康 ㄐㄧㄢˋ ㄎㄤ', '警察 ㄐㄧㄥˇ ㄔㄚˊ', '鏡子 ㄐㄧㄥˋ ㄗ˙', '加上 ㄐㄧㄚ ㄕㄤˋ', '景色 ㄐㄧㄥˇ ㄙㄜˋ'],
-            'ㄑ': ['秋天 ㄑㄧㄡ ㄊㄧㄢ', '氣球 ㄑㄧˋ ㄑㄧㄡˊ', '前面 ㄑㄧㄢˊ ㄇㄧㄢˋ', '蜻蜓 ㄑㄧㄥ ㄊㄧㄥˊ', '清潔 ㄑㄧㄥ ㄐㄧㄝˊ', '企鵝 ㄑㄧˋ ㄜˊ', '汽車 ㄑㄧˋ ㄔㄜ', '請問 ㄑㄧㄥˇ ㄨㄣˋ', '奇怪 ㄑㄧˊ ㄍㄨㄞˋ', '期待 ㄑㄧˊ ㄉㄞˋ'],
-            'ㄒ': ['學校 ㄒㄩㄝˊ ㄒㄧㄠˋ', '小雞 ㄒㄧㄠˇ ㄐㄧ', '喜歡 ㄒㄧˇ ㄏㄨㄢ', '洗手 ㄒㄧˇ ㄕㄡˇ', '辛苦 ㄒㄧㄣ ㄎㄨˇ', '西瓜 ㄒㄧ ㄍㄨㄚ', '休息 ㄒㄧㄡ ㄒㄧˊ', '希望 ㄒㄧ ㄨㄤˋ', '新年 ㄒㄧㄣ ㄋㄧㄢ', '下雨 ㄒㄧㄚˋ ㄩˇ'],
+            'ㄑ': ['秋天 ㄑㄧㄡ ㄊㄧㄢ', '氣球 ㄑㄧˋ ㄑㄧㄡˊ', '前面 ㄑㄧㄢˊ ㄇㄧㄢˋ', '蜻廷 ㄑㄧㄥ ㄊㄧㄥˊ', '清潔 ㄑㄧㄥ ㄐㄧㄝˊ', '企鵝 ㄑㄧˋ ㄜˊ', '汽車 ㄑㄧˋ ㄔㄜ', '請問 ㄑㄧㄥˇ ㄨㄣˋ', '奇怪 ㄑㄧˊ ㄍㄨㄞˋ', '期待 ㄑㄧˊ ㄉㄞˋ'],
+            'ㄒ': ['學校 ㄒㄩㄝˊ ㄒㄧㄠˋ', '小雞 ㄒㄧㄠˇ ㄐㄧ', '喜歡 ㄒㄧˇ ㄏㄨㄢ', '洗手 ㄒㄧˇ ㄕㄡˇ', '辛苦 ㄒㄧㄣ ㄎㄨˇ', '西瓜 ㄒㄧ ㄍㄨㄚ', '休息 ㄒㄧㄡ ㄒㄧˊ', '希望 ㄒㄧ ㄨㄤˋ'],
             'ㄓ': ['知道 ㄓ ㄉㄠˋ', '中午 ㄓㄨㄥ ㄨˇ', '種植 ㄓㄨㄥˋ ㄓˊ', '真誠 ㄓㄣ ㄔㄥˊ', '準備 ㄓㄨㄣˇ ㄅㄟˋ', '紙張 ㄓˇ ㄓㄤ', '整理 ㄓㄥˇ ㄌㄧˇ', '重要 ㄓㄨㄥˋ ㄧㄠˋ', '蜘蛛 ㄓ ㄓㄨ', '指甲 ㄓˇ ㄐㄧㄚˇ'],
             'ㄔ': ['吃飯 ㄔ ㄈㄢˋ', '春天 ㄔㄨㄣ ㄊㄧㄢ', '出發 ㄔㄨ ㄈㄚ', '成功 ㄔㄥˊ ㄍㄨㄥ', '車子 ㄔㄜ ㄗ˙', '嘗試 ㄔㄤˊ ㄕˋ', '窗戶 ㄔㄨㄤ ㄏㄨˋ', '長度 ㄔㄤˊ ㄉㄨˋ', '唱歌 ㄔㄤˋ ㄍㄜ', '超過 ㄔㄠ ㄍㄨㄛˋ'],
             'ㄕ': ['手錶 ㄕㄡˇ ㄅㄧㄠˇ', '水果 ㄕㄨㄟˇ ㄍㄨㄛˇ', '書本 ㄕㄨ ㄅㄣˇ', '山上 ㄕㄢ ㄕㄤˋ', '身上 ㄕㄣ ㄕㄤˋ', '樹木 ㄕㄨˋ ㄇㄨˋ', '世界 ㄕˋ ㄐㄧㄝˋ', '收穫 ㄕㄡ ㄏㄨㄛˋ', '時間 ㄕˊ ㄐㄧㄢ', '生日 ㄕㄥ ㄖˋ'],
@@ -208,8 +255,8 @@
             'ㄝ': ['爺爺 ㄧㄝˊ ㄧㄝ˙', '寫字 ㄒㄧㄝˇ ㄗˋ', '鞋子 ㄒㄧㄝˊ ㄗ˙', '謝謝 ㄒㄧㄝˋ ㄒㄧㄝ˙', '姐姐 ㄐㄧㄝˇ ㄐㄧㄝˇ', '咧嘴 ㄌㄧㄝˇ ㄗㄨㄟˇ', '夜晚 ㄧㄝˋ ㄨㄢˇ', '蝴蝶 ㄏㄨˊ ㄉㄧㄝˊ', '解散 ㄐㄧㄝˇ ㄙㄢˋ', '斜坡 ㄒㄧㄝˊ ㄆㄛ'],
             'ㄞ': ['愛心 ㄞˋ ㄒㄧㄣ', '矮小 ㄞˇ ㄒㄧㄠˇ', '應該 ㄧㄥ ㄍㄞ', '徘徊 ㄆㄞˊ ㄏㄨㄞˊ', '拍賣 ㄆㄞ ㄇㄞˋ', '外國 ㄨㄞˋ ㄍㄨㄛˊ', '害蟲 ㄏㄞˋ ㄔㄨㄥˊ', '來到 ㄌㄞˊ ㄉㄠˋ', '彩色 ㄘㄞˇ ㄙㄜˋ', '拆除 ㄔㄞ ㄔㄨˊ'],
             'ㄟ': ['飛機 ㄈㄟ ㄐㄧ', '累積 ㄌㄟˇ ㄐㄧ', '杯子 ㄅㄟ ㄗ˙', '背後 ㄅㄟˋ ㄏㄡˋ', '歸類 ㄍㄨㄟ ㄌㄟˋ', '配音 ㄆㄟˋ ㄧㄣ', '沒有 ㄇㄟˊ ㄧㄡˇ', '對面 ㄉㄨㄟˋ ㄇㄧㄢˋ', '推開 ㄊㄨㄟ ㄎㄞ', '內容 ㄋㄟˋ ㄖㄨㄥˊ'],
-            'ㄠ': ['驕傲 ㄐㄧㄠ ㄠˋ', '凹洞 ㄠ ㄉㄨㄥˋ', '宣告 ㄒㄩㄢ ㄍㄠˋ', '考試 ㄎㄠˇ ㄕˋ', '懊悔 ㄠˋ ㄏㄨㄟˇ', '包含 ㄅㄠ ㄏㄢˊ', '跑步 ㄆㄠˇ ㄅㄨˋ', '來到 ㄌㄞˊ ㄉㄠˋ', '掃地 ㄙㄠˇ ㄉㄧˋ', '包子 ㄅㄠ ㄗ˙'],
-            'ㄡ': ['歐美 ㄡ ㄇㄟˇ', '海鷗 ㄏㄞˇ ㄡ', '偶像 ㄡˇ ㄒㄧㄤˋ', '扣子 ㄎㄡˋ ㄗ˙', '後悔 ㄏㄡˋ ㄏㄨㄟˇ', '都有 ㄉㄡ ㄧㄡˇ', '透露 ㄊㄡˋ ㄌㄨˋ', '肉片 ㄖㄡˋ ㄆㄧㄢˋ', '救命 ㄐㄧㄡˋ ㄇㄧㄥˋ', '狗狗 ㄍㄡˇ ㄍㄡˇ'],
+            'ㄠ': ['驕傲 ㄐㄧㄠ ㄠˋ', '凹洞 ㄠ ㄉㄨㄥˋ', '宣告 ㄒㄩㄢ ㄍㄠˋ', '考試 ㄎㄠˇ ㄕˋ', '懊悔 ㄠˋ ㄏ維', '包含 ㄅㄠ ㄏㄢˊ', '跑步 ㄆㄠˇ ㄅㄨˋ', '來到 ㄌㄞˊ ㄉㄠˋ', '掃地 ㄙㄠˇ ㄉㄧˋ', '包子 ㄅㄠ ㄗ˙'],
+            'ㄡ': ['歐美 ㄡ ㄇㄟˇ', '海鷗 ㄏㄞˇ ㄡ', '偶像 ㄡˇ ㄒㄧㄤˋ', '扣子 ㄎㄡˋ ㄗ˙', '後悔 ㄏㄡˋ ㄏㄨㄟˇ', '都有 ㄉㄡ ㄧㄡˇ', '透過 ㄊㄡˋ ㄍㄨㄛˋ', '肉片 ㄖㄡˋ ㄆㄧㄢˋ', '救命 ㄐㄧㄡˋ ㄇㄧㄥˋ', '狗狗 ㄍㄨˇ ㄍㄡˇ'],
             'ㄢ': ['安靜 ㄢ ㄐㄧㄥˋ', '暗號 ㄢˋ ㄏㄠˋ', '岸邊 ㄢˋ ㄅㄧㄢ', '答案 ㄉㄚˊ ㄢˋ', '安排 ㄢ ㄆㄞˊ', '搬家 ㄅㄢ ㄐㄧㄚ', '盤子 ㄆㄢˊ ㄗ˙', '方面 ㄈㄤ ㄇㄧㄢˋ', '男聲 ㄋㄢˊ ㄕㄥ', '藍色 ㄌㄢˊ ㄙㄜˋ'],
             'ㄣ': ['恩人 ㄣ ㄖㄣˊ', '感恩 ㄍㄢˇ ㄣ', '根本 ㄍㄣ ㄅㄣˇ', '噴泉 ㄆㄣ ㄑㄩㄢˊ', '本身 ㄅㄣˇ ㄕㄣ', '盆栽 ㄆㄣˊ ㄗㄞ', '門鈴 ㄇㄣˊ ㄌㄧㄥˊ', '等到 ㄉㄥˇ ㄉㄠˋ', '準備 ㄓㄨㄣˇ ㄅㄟˋ', '南部 ㄋㄧㄢˊ ㄅㄨˋ'],
             'ㄤ': ['骯髒 ㄤ ㄗㄤ', '高昂 ㄍㄠ ㄤˊ', '手槍 ㄕㄡˇ ㄑㄧㄤ', '鋼琴 ㄍㄤ ㄑㄧㄣˊ', '胖子 ㄆㄤˋ ㄗ˙', '忙碌 ㄇㄤˊ ㄌㄨˋ', '方向 ㄈㄤ ㄒㄧㄤˋ', '文章 ㄨㄣˊ ㄓㄤ', '糖果 ㄊㄤˊ ㄍㄨㄛˇ', '陽光 ㄧㄤˊ ㄍㄨㄤ'],
@@ -220,301 +267,216 @@
             'ㄩ': ['月亮 ㄩㄝˋ ㄌㄧㄤˋ', '玉米 ㄩˋ ㄇㄧˇ', '雨衣 ㄩˇ ㄧ', '語言 ㄩˇ ㄧㄢˊ', '浴室 ㄩˋ ㄕˋ', '魚缸 ㄩˊ ㄍㄤ', '宇宙 ㄩˇ ㄓㄡ', '愉快 ㄩˊ ㄎㄨㄞˋ', '遇到 ㄩˋ ㄉㄠˋ', '許多 ㄒㄩˇ ㄉㄨㄛ']
         };
 
-        window.addEventListener('load', () => {
-            if (typeof EXTENDED_WORDS !== 'undefined') {
-                for (let zy in EXTENDED_WORDS) {
-                    SMART_LIB[zy] = [...new Set([...(SMART_LIB[zy] || []), ...EXTENDED_WORDS[zy]])];
-                }
-            }
-        });
-
         let sectionState = {
             'section-top': { words: [], status: '隨機', val: '' },
             'section-bottom': { words: [], status: '隨機', val: '' }
         };
 
-        function toggleManual(e) {
-            e.stopPropagation();
-            const box = document.getElementById('manual-box');
-            if (box) box.classList.toggle('hidden');
+        // UI 互動邏輯
+        function toggleManual(e) { e.stopPropagation(); document.getElementById('manual-box').classList.toggle('hidden'); }
+        function toggleSettings(e) { e.stopPropagation(); document.getElementById('settings-area').classList.toggle('hidden'); }
+        function closeAllPickers() { 
+            const picker = document.getElementById('zhuyin-picker');
+            if (picker) picker.style.display = 'none'; 
+            const manual = document.getElementById('manual-box');
+            if (manual) manual.classList.add('hidden'); 
         }
 
         function openZhuyinPicker(e, inputEl) {
             e.stopPropagation();
-            let picker = document.getElementById('zhuyin-picker');
-            if (!picker) {
-                picker = document.createElement('div');
-                picker.id = 'zhuyin-picker';
-                document.body.appendChild(picker);
-            }
+            const picker = document.getElementById('zhuyin-picker');
             const rect = inputEl.getBoundingClientRect();
             picker.innerHTML = '';
             allZhuyin.split('').forEach(char => {
                 const key = document.createElement('div');
                 key.className = 'picker-key';
                 key.innerText = char;
-                key.onclick = (event) => {
-                    event.stopPropagation();
+                key.onclick = (ev) => {
+                    ev.stopPropagation();
                     inputEl.value = char;
-                    const section = inputEl.closest('.section-block');
-                    if (section) section.querySelector('.btn-text').innerText = "產生造詞";
-                    closeAllPickers();
+                    inputEl.closest('.section-block').querySelector('.btn-text').innerText = "產生造詞";
+                    picker.style.display = 'none';
                 };
                 picker.appendChild(key);
             });
             picker.style.display = 'grid';
-            let top = rect.bottom + window.scrollY + 10;
             let left = rect.left + window.scrollX;
-            const pickerWidth = window.innerWidth > 640 ? 380 : 300; 
-            if (left + pickerWidth > window.innerWidth) left = window.innerWidth - pickerWidth - 20;
-            if (left < 10) left = 10;
-            picker.style.top = `${top}px`;
-            picker.style.left = `${left}px`;
-        }
-
-        function closeAllPickers() {
-            const picker = document.getElementById('zhuyin-picker');
-            if (picker) picker.style.display = 'none';
-            const manual = document.getElementById('manual-box');
-            if (manual) manual.classList.add('hidden');
-        }
-
-        function toggleSettings(e) {
-            e.stopPropagation();
-            const area = document.getElementById('settings-area');
-            if (area) area.classList.toggle('hidden');
+            if (left + 380 > window.innerWidth) left = window.innerWidth - 400;
+            picker.style.top = `${rect.bottom + window.scrollY + 10}px`;
+            picker.style.left = `${Math.max(10, left)}px`;
         }
 
         async function handleSectionAction(sectionId) {
             const section = document.getElementById(sectionId);
-            const inputField = section.querySelector('.zhuyin-input');
-            const input = inputField ? inputField.value.trim() : "";
+            const input = section.querySelector('.zhuyin-input').value.trim();
             const btnText = section.querySelector('.btn-text');
-            const userKeyField = document.getElementById('user-api-key');
-            const userKey = userKeyField ? userKeyField.value.trim() : "";
-            const currentKey = apiKey || userKey;
+            const userKey = document.getElementById('user-api-key').value.trim();
             const otherId = sectionId === 'section-top' ? 'section-bottom' : 'section-top';
             const existing = sectionState[otherId].words.map(w => typeof w === 'string' ? w.split(' ')[0] : w.text);
 
-            const oldBtnText = btnText.innerText; btnText.innerHTML = `<div class="loader"></div>`;
+            const oldText = btnText.innerText; btnText.innerHTML = `<div class="loader mx-auto"></div>`;
 
-            if (currentKey) {
+            if (apiKey || userKey) {
                 try {
-                    let prompt = input ? `針對注音『${input}』生成 8 個常用的造詞。` : `從ㄅ~ㄦ 37 個注音中隨機挑選生成 8 個常用的造詞（跨符號）。`;
-                    prompt += ` 條件：詞彙長度必須剛好為 2 個字，不可包含 [${existing.join(', ')}]。JSON格式：{"words": [{"text": "...", "zhuyin": "..."}]}`;
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${currentKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } } ) });
+                    let prompt = input ? `針對注音『${input}』生成 8 個常用的造詞。` : `隨機挑選注音生成 8 個常用的造詞。`;
+                    prompt += ` 條件：2個字，不可包含 [${existing.join(', ')}]。JSON格式：{"words": [{"text": "...", "zhuyin": "..."}]}`;
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey || userKey}`, { 
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } }) 
+                    });
                     const result = await res.json();
                     const data = JSON.parse(result.candidates[0].content.parts[0].text);
                     const finalWords = data.words.filter(w => w.text.length === 2).slice(0, 8);
                     sectionState[sectionId] = { words: finalWords, status: input ? '指定' : '隨機', val: input };
-                    renderToSection(sectionId, finalWords); btnText.innerText = oldBtnText; return;
-                } catch (e) { }
+                    renderToSection(sectionId, finalWords); btnText.innerText = oldText; return;
+                } catch (e) { console.error("AI 生成失敗"); }
             }
 
-            let resultWords = [];
-            if (input) {
-                const pool = SMART_LIB[input] || ['無資料 ㄨˊ ㄗ ㄌㄧㄠˋ'];
-                resultWords = pool.filter(w => w.split(' ')[0].length === 2).sort(() => 0.5 - Math.random()).filter(w => !existing.includes(w.split(' ')[0])).slice(0, 8);
-            } else {
-                const allPool = Object.values(SMART_LIB).flat();
-                resultWords = allPool.filter(w => w.split(' ')[0].length === 2).sort(() => 0.5 - Math.random()).filter(w => !existing.includes(w.split(' ')[0])).slice(0, 8);
-            }
+            let source = (typeof EXTENDED_WORDS !== 'undefined') ? EXTENDED_WORDS : SMART_LIB;
+            let pool = input ? (source[input] || []) : Object.values(source).flat();
+            let resultWords = pool.filter(w => w.split(' ')[0].length === 2 && !existing.includes(w.split(' ')[0])).sort(() => 0.5 - Math.random()).slice(0, 8);
+            
             sectionState[sectionId] = { words: resultWords, status: input ? '指定' : '隨機', val: input };
-            renderToSection(sectionId, resultWords); btnText.innerText = oldBtnText;
+            renderToSection(sectionId, resultWords); btnText.innerText = oldText;
         }
 
         function renderToSection(sectionId, words) {
-            const section = document.getElementById(sectionId);
-            const grid = section.querySelector('.word-grid');
-            if (!grid) return;
+            const grid = document.getElementById(sectionId).querySelector('.word-grid');
             grid.innerHTML = '';
             words.forEach(item => {
                 const text = typeof item === 'string' ? item.split(' ')[0] : item.text;
                 const zyRaw = typeof item === 'string' ? item.split(' ').slice(1) : item.zhuyin.split(' ');
                 const card = document.createElement('div');
-                card.className = "bg-white border-2 border-slate-100 rounded-xl shadow-sm p-1.5 flex items-center justify-center";
-                let wordHTML = `<div class="word-container">`;
+                card.className = "bg-white/80 rounded-2xl shadow-sm p-4 flex items-center justify-center border border-orange-50";
+                let html = `<div class="word-container">`;
                 text.split('').forEach((char, i) => {
-                    const zyStr = zyRaw[i] || "";
-                    let symbols = '', tone = '', toneClass = '';
+                    const zyStr = zyRaw[i] || ""; let symbols = '', tone = '', toneClass = '';
                     for (let c of zyStr) {
                         if (['ˊ', 'ˇ', 'ˋ'].includes(c)) { tone = c; toneClass = 'tone-side'; }
                         else if (c === '˙') { tone = c; toneClass = 'tone-top'; }
-                        else if (c !== ' ') { symbols += `<span class="block">${c}</span>`; }
+                        else { symbols += `<span class="block">${c}</span>`; }
                     }
-                    wordHTML += `<div class="char-unit"><div class="zhuyin-wrapper"><div class="zhuyin-symbols">${symbols}${tone ? `<div class="${toneClass}">${tone}</div>` : ''}</div></div><div class="char-text">${char}</div></div>`;
+                    html += `<div class="char-unit"><div class="zhuyin-wrapper"><div class="zhuyin-symbols">${symbols}${tone ? `<div class="${toneClass}">${tone}</div>` : ''}</div></div><div class="char-text">${char}</div></div>`;
                 });
-                wordHTML += `</div>`; card.innerHTML = wordHTML; grid.appendChild(card);
+                html += `</div>`; card.innerHTML = html; grid.appendChild(card);
             });
-            section.querySelector('.result-area').classList.remove('hidden');
+            document.getElementById(sectionId).querySelector('.result-area').classList.remove('hidden');
         }
 
-        // --- 1. 正式造詞單渲染引擎 (直式 A4) ---
+        /* -------------------------------------------------------------------------
+           1. 正式單渲染：絕對嚴格鎖定所有輸出參數，保證不跑位
+        -------------------------------------------------------------------------- */
         function renderFormalDocument() {
+            const content = document.getElementById('capture-content');
             const area = document.getElementById('capture-area');
-            const captureContent = document.getElementById('capture-content');
-            area.style.width = "1000px"; area.style.height = "1414px";
-            area.style.padding = "40px";
-            
-            captureContent.innerHTML = `<div style="text-align:center; font-size:46px; font-weight:900; margin-top:10px; margin-bottom:20px; color:#1e293b;">注音造詞練習單</div>`;
-            
-            const addFormalSection = (sectionId, baseTitle) => {
-                const data = sectionState[sectionId]; if (data.words.length === 0) return;
-                let sectionMarginTop = sectionId === 'section-bottom' ? "25px" : "5px";
-                
-                const titleEl = document.createElement('div');
-                titleEl.style.cssText = `border-bottom:4px solid #2563eb; margin-top:${sectionMarginTop}; margin-bottom:15px; width:100%; font-size:30px; font-weight:900; padding-bottom:20px; color:#334155;`;
-                titleEl.innerText = data.status === '隨機' ? `${baseTitle} 隨機生成造詞` : `${baseTitle} [${data.val}] 的造詞練習`;
-                captureContent.appendChild(titleEl);
-                
-                const grid = document.createElement('div'); 
+            area.style.width = "1000px"; area.style.height = "1414px"; area.style.padding = "40px";
+            area.style.background = "#fffcf0"; 
+            content.innerHTML = `<div style="text-align:center; font-size:46px; font-weight:900; margin-top:10px; margin-bottom:20px; color:#433422;">注音造詞練習單</div>`;
+            const addFormal = (id, title) => {
+                const data = sectionState[id]; if (!data.words.length) return;
+                const head = document.createElement('div');
+                head.style.cssText = `border-bottom:4px solid #ff8c42; margin-top:${id==='section-bottom'?'25px':'5px'}; margin-bottom:15px; width:100%; font-size:30px; font-weight:900; padding-bottom:20px; color:#433422;`;
+                head.innerText = `${title} ${data.status==='隨機'?'隨機生成造詞':'['+data.val+'] 的造詞練習'}`;
+                content.appendChild(head);
+                const grid = document.createElement('div');
                 grid.style.cssText = "display:grid; grid-template-columns:repeat(4, 1fr); gap:15px 20px; width:100%;";
-                
                 data.words.forEach(item => {
-                    const wordBox = document.createElement('div'); 
-                    wordBox.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; height:240px; background:#ffffff; border:3px solid #94a3b8; border-radius:40px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); overflow:visible;`;
-                    
+                    const box = document.createElement('div');
+                    box.style.cssText = "display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px; height:240px; background:#ffffff; border:3px solid #f9ebbe; border-radius:40px; overflow:visible;";
                     const text = typeof item === 'string' ? item.split(' ')[0] : item.text;
                     const zyRaw = typeof item === 'string' ? item.split(' ').slice(1) : item.zhuyin.split(' ');
-                    
                     text.split('').forEach((char, i) => {
-                        const row = document.createElement('div'); 
-                        row.style.cssText = `display:flex; flex-direction:row; align-items:center; justify-content:center; height:110px; width:100%; margin-bottom:5px;`;
-                        const charEl = document.createElement('div'); charEl.innerText = char; 
-                        // 字體與位移固定
-                        charEl.style.cssText = `font-family:'標楷體', 'DFKai-SB', 'BiauKai', 'Apple LiSung', 'KaiTi', 'Noto Serif TC', serif; font-size:4.8rem; font-weight:normal; color:#000; margin-right:15px; display:flex; align-items:center; justify-content:center; height:100px; margin-top:-52px;`;
-                        
-                        const zyBox = document.createElement('div'); 
-                        zyBox.style.cssText = `position:relative; width:45px; height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:-7px;`;
-                        
-                        const zySymbols = document.createElement('div'); zySymbols.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:1.6rem; font-weight:bold; color:#2563eb; line-height:1.05;`;
-                        const zyStr = zyRaw[i] || ""; let symbols = "", tone = "", toneClass = "";
-                        for(let c of zyStr) { if(['ˊ','ˇ','ˋ'].includes(c)) { tone = c; toneClass = "side"; } else if(c === '˙') { tone = c; toneClass = "top"; } else { symbols += `<span style="display:block;">${c}</span>`; } }
-                        zySymbols.innerHTML = symbols; zyBox.appendChild(zySymbols);
-                        if(tone) {
-                            const toneEl = document.createElement('div'); toneEl.innerText = tone; toneEl.style.cssText = `position:absolute; color:#ef4444; font-weight:900;`;
-                            if(toneClass === 'side') { toneEl.style.right = "-12px"; toneEl.style.top = "50%"; toneEl.style.transform = "translateY(-50%)"; toneEl.style.fontSize = "1.5rem"; } else { toneEl.style.top = "2px"; toneEl.style.left = "50%"; toneEl.style.transform = "translateX(-50%)"; toneEl.style.fontSize = "1.6rem"; }
-                            zyBox.appendChild(toneEl);
-                        }
-                        row.appendChild(charEl); row.appendChild(zyBox); wordBox.appendChild(row);
+                        const row = document.createElement('div');
+                        row.style.cssText = "display:flex; flex-direction:row; align-items:center; justify-content:center; height:110px; width:100%; margin-bottom:5px;";
+                        const cEl = document.createElement('div'); cEl.innerText = char;
+                        cEl.style.cssText = `font-family:'標楷體', 'DFKai-SB', serif; font-size:4.0rem; color:#000; margin-right:15px; display:flex; align-items:center; height:100px; margin-top:-58px;`;
+                        const zBox = document.createElement('div');
+                        zBox.style.cssText = "position:relative; width:45px; height:100px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top:-22px;";
+                        const zSym = document.createElement('div'); zSym.style.cssText = "display:flex; flex-direction:column; align-items:center; font-size:1.6rem; font-weight:bold; color:#d35400; line-height:1.1;";
+                        const zy = zyRaw[i] || ""; let s="", t="", tc="";
+                        for(let c of zy){ if(['ˊ','ˇ','ˋ'].includes(c)){t=c;tc="side";}else if(c==='˙'){t=c;tc="top";}else{s+=`<span style="display:block;">${c}</span>`;} }
+                        zSym.innerHTML = s; zBox.appendChild(zSym);
+                        if(t){ const tEl = document.createElement('div'); tEl.innerText = t; tEl.style.cssText = `position:absolute; color:#2563eb; font-weight:900; ${tc==='side'?'right:-12px; top:50%; transform:translateY(-50%); font-size:1.5rem;':'top:-12px; left:50%; transform:translateX(-50%); font-size:1.6rem;'}`; zBox.appendChild(tEl); }
+                        row.appendChild(cEl); row.appendChild(zBox); box.appendChild(row);
                     });
-                    grid.appendChild(wordBox);
+                    grid.appendChild(box);
                 });
-                captureContent.appendChild(grid);
+                content.appendChild(grid);
             };
-            addFormalSection('section-top', "第一區"); 
-            addFormalSection('section-bottom', "第二區");
+            addFormal('section-top', "第一區"); addFormal('section-bottom', "第二區");
         }
 
-        // --- 2. 手寫練習單渲染引擎 (橫式 A4) ---
-        function renderPracticeDocument(targetId) {
+        /* -------------------------------------------------------------------------
+           2. 練習單渲染：絕對嚴格鎖定座標與顏色參數
+        -------------------------------------------------------------------------- */
+        function renderPracticeDocument(id) {
+            const content = document.getElementById('capture-content');
             const area = document.getElementById('capture-area');
-            const captureContent = document.getElementById('capture-content');
-            area.style.width = "1414px"; area.style.height = "1000px";
-            area.style.padding = "30px 40px";
-            
-            const sectionLabel = targetId === 'section-top' ? "第一區" : "第二區";
-            const data = sectionState[targetId];
-            captureContent.innerHTML = `<div style="text-align:center; font-size:46px; font-weight:900; margin-bottom:20px; color:#1e293b;">注音符號手寫練習單 <span style="font-size: 26px; font-weight: 700; color: #64748b; margin-left: 10px;">(${sectionLabel} ${data.status}生成造詞)</span></div>`;
-            
-            const lineEl = document.createElement('div');
-            lineEl.style.cssText = `border-bottom:4px solid #2563eb; margin-bottom:20px; width:100%; height:10px;`;
-            captureContent.appendChild(lineEl);
-            
-            const grid = document.createElement('div'); 
-            grid.style.cssText = "display:grid; grid-template-columns:repeat(4, 1fr); gap:12px 12px; width:100%;";
-            
+            area.style.width = "1414px"; area.style.height = "1000px"; area.style.padding = "30px 40px";
+            area.style.background = "#fffcf0"; 
+            const data = sectionState[id]; const label = id==='section-top'?"第一區":"第二區";
+            content.innerHTML = `<div style="text-align:center; font-size:46px; font-weight:900; margin-bottom:20px; color:#433422;">注音符號手寫練習單 <span style="font-size: 26px; font-weight: 700; color: #7f6e5d; margin-left: 10px;">(${label} ${data.status}生成造詞)</span></div><div style="border-bottom:4px solid #ff8c42; margin-bottom:20px; width:100%; height:10px;"></div>`;
+            const grid = document.createElement('div'); grid.style.cssText = "display:grid; grid-template-columns:repeat(4, 1fr); gap:12px 12px; width:100%;";
             data.words.forEach(item => {
-                const wordBox = document.createElement('div'); 
-                wordBox.style.cssText = `display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 5px; background:#ffffff; border:3px solid #94a3b8; border-radius:30px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); gap:15px; min-height:410px;`;
-                
+                const box = document.createElement('div'); 
+                box.style.cssText = "display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 5px; background:#ffffff; border:3px solid #f9ebbe; border-radius:30px; gap:15px; min-height:410px; box-shadow:0 4px 6px -1px rgba(139, 69, 19, 0.05);";
                 const text = typeof item === 'string' ? item.split(' ')[0] : item.text;
                 const zyRaw = typeof item === 'string' ? item.split(' ').slice(1) : item.zhuyin.split(' ');
-                
                 text.split('').forEach((char, i) => {
-                    const row = document.createElement('div'); 
-                    row.style.cssText = `display:flex; flex-direction:row; align-items:center; gap:6px; height:160px;`;
-                    
-                    const buildPracticeBox = (isTrace) => {
-                        const b = document.createElement('div');
-                        b.style.cssText = `width:92px; height:160px; border:${isTrace ? '1px solid #94a3b8' : '2px dashed #64748b'}; border-radius:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; background:${isTrace ? '#f1f5f9' : 'transparent'};`;
-                        if (!isTrace) {
-                            const h = document.createElement('div'); h.style.cssText = "position:absolute; top:50%; left:0; width:100%; border-top:1px dashed #cbd5e1;";
-                            const v = document.createElement('div'); v.style.cssText = "position:absolute; top:0; left:50%; height:100%; border-left:1px dashed #cbd5e1;";
-                            b.appendChild(h); b.appendChild(v);
-                        } else {
-                            const zySymbols = document.createElement('div'); 
-                            zySymbols.style.cssText = "display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:2.4rem; font-weight:bold; color:#94a3b8; line-height:1.05; margin-top:-20px;";
-                            const zyStr = zyRaw[i] || ""; let symbols = "", tone = "", toneClass = "";
-                            for(let c of zyStr) { if(['ˊ','ˇ','ˋ'].includes(c)) { tone = c; toneClass = "side"; } else if(c === '˙') { tone = c; toneClass = "top"; } else { symbols += `<span style="display:block;">${c}</span>`; } }
-                            zySymbols.innerHTML = symbols; b.appendChild(zySymbols);
-                            if(tone) {
-                                const toneEl = document.createElement('div'); toneEl.innerText = tone; toneEl.style.cssText = "position:absolute; color:#94a3b8; font-weight:900;";
-                                if(toneClass === 'side') { toneEl.style.right = "8px"; toneEl.style.top = "38%"; toneEl.style.transform = "translateY(-50%)"; toneEl.style.fontSize = "1.8rem"; } else { toneEl.style.top = "-12px"; toneEl.style.left = "50%"; toneEl.style.transform = "translateX(-50%)"; toneEl.style.fontSize = "1.9rem"; }
-                                b.appendChild(toneEl);
+                    const row = document.createElement('div'); row.style.cssText = "display:flex; flex-direction:row; align-items:center; gap:6px; height:160px;";
+                    const buildPracticeBox = (isT) => {
+                        const b = document.createElement('div'); 
+                        b.style.cssText = `width:92px; height:160px; border:${isT?'1.5px solid #f9ebbe':'2px dashed #f3e5ab'}; border-radius:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; background:${isT?'#fff9e6':'transparent'};`;
+                        if(!isT){ 
+                            b.innerHTML = `<div style="position:absolute; top:50%; left:0; width:100%; border-top:1px dashed #f3e5ab;"></div><div style="position:absolute; top:0; left:50%; height:100%; border-left:1px dashed #f3e5ab;"></div>`; 
+                        }
+                        else {
+                            const zS = document.createElement('div'); 
+                            const zy = zyRaw[i] || ""; let s="", t="", tc="";
+                            for(let c of zy){ 
+                                if(['ˊ','ˇ','ˋ'].includes(c)){t=c;tc="side";}
+                                else if(c==='˙'){t=c;tc="top";}
+                                else{s+=`<span style="display:block;">${c}</span>`;} 
+                            }
+                            const needsOffset = (tc === "side");
+                            zS.style.cssText = `display:flex; flex-direction:column; align-items:center; font-size:2.4rem; font-weight:bold; color:#fbd38d; line-height:1.05; margin-top:-20px; transition: none; transform: ${needsOffset ? 'translateX(-15px)' : 'translateX(0)'};`;
+                            zS.innerHTML = s; b.appendChild(zS);
+                            if(t){ 
+                                const tE = document.createElement('div'); tE.innerText = t; 
+                                tE.style.cssText = `position:absolute; color:#93c5fd; font-weight:900; ${tc==='side'?'right:12px; top:50%; transform:translateY(-50%); font-size:1.8rem;':'top:-12px; left:50%; transform:translateX(-50%); font-size:1.9rem;'}`; 
+                                b.appendChild(tE); 
                             }
                         }
                         return b;
                     };
-                    row.appendChild(buildPracticeBox(true));  
-                    row.appendChild(buildPracticeBox(false)); 
-                    row.appendChild(buildPracticeBox(false)); 
-                    wordBox.appendChild(row);
+                    row.appendChild(buildPracticeBox(true)); row.appendChild(buildPracticeBox(false)); row.appendChild(buildPracticeBox(false)); box.appendChild(row);
                 });
-                grid.appendChild(wordBox);
+                grid.appendChild(box);
             });
-            captureContent.appendChild(grid);
+            content.appendChild(grid);
         }
-
-        window.onload = function() {
-            document.querySelectorAll('.zhuyin-input').forEach(input => {
-                input.addEventListener('input', (e) => {
-                    const section = e.target.closest('.section-block');
-                    const btnText = section.querySelector('.btn-text');
-                    let val = e.target.value.trim();
-                    if (val.length > 0) {
-                        const lastChar = val.charAt(val.length - 1);
-                        if (allZhuyin.includes(lastChar)) {
-                            e.target.value = lastChar;
-                            btnText.innerText = "產生造詞";
-                        } else { e.target.value = ""; btnText.innerText = "隨機產生造詞"; }
-                    } else { btnText.innerText = "隨機產生造詞"; }
-                });
-            });
-        };
 
         async function exportAsImage() {
-            const btn = document.getElementById('export-img-btn');
-            if (sectionState['section-top'].words.length === 0 && sectionState['section-bottom'].words.length === 0) {
-                alert("請先產生造詞喔！"); return;
-            }
-            btn.disabled = true; btn.innerHTML = `<div class="loader"></div>`;
-            renderFormalDocument(); 
-            await performCapture(`注音造詞單_${new Date().getTime()}.png`, 1000, 1414);
-            btn.disabled = false; btn.innerHTML = `<span>🖼️</span> 輸出圖片`;
+            if (!sectionState['section-top'].words.length && !sectionState['section-bottom'].words.length) return alert("請先產生造詞");
+            renderFormalDocument(); await performCapture(`造詞單_${Date.now()}.png`, 1000, 1414);
         }
-
         async function exportPracticeImage(sectionId) {
-            const btn = sectionId === 'section-top' ? document.getElementById('export-practice-top-btn') : document.getElementById('export-practice-bottom-btn');
-            if (sectionState[sectionId].words.length === 0) {
-                alert("該區域還沒有造詞喔！"); return;
-            }
-            const oldText = btn.innerText;
-            btn.disabled = true; btn.innerHTML = `<div class="loader"></div>`;
+            if (!sectionState[sectionId].words.length) return alert("該區域無造詞");
             renderPracticeDocument(sectionId); 
             const label = sectionId === 'section-top' ? "第一區" : "第二區";
-            await performCapture(`注音手寫練習單_橫式_${label}_${new Date().getTime()}.png`, 1414, 1000);
-            btn.disabled = false; btn.innerHTML = oldText;
+            await performCapture(`練習單_${label}_${Date.now()}.png`, 1414, 1000);
+        }
+        async function performCapture(n, w, h) {
+            try {
+                const canvas = await html2canvas(document.getElementById('capture-area'), { scale: 2, useCORS: true, width: w, height: h, onclone: (d) => d.getElementById('capture-area').style.left = "0" });
+                const l = document.createElement('a'); l.download = n; l.href = canvas.toDataURL(); l.click();
+            } catch (e) { alert("輸出失敗"); }
         }
 
-        async function performCapture(fileName, w, h) {
-            try {
-                const area = document.getElementById('capture-area');
-                const canvas = await html2canvas(area, { scale: 2, useCORS: true, backgroundColor: "#ffffff", width: w, height: h, onclone: (doc) => { doc.getElementById('capture-area').style.left = "0"; } });
-                const link = document.createElement('a'); link.download = fileName; link.href = canvas.toDataURL("image/png"); link.click();
-            } catch (err) { alert("輸出失敗"); }
-        }
+        // 初始化
+        window.onload = function() {
+            lucide.createIcons();
+        };
     </script>
 </body>
 </html>
-
